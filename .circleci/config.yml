@@ -1,0 +1,108 @@
+version: 2
+jobs:
+  build:
+    machine:
+      docker_layer_caching: true
+    steps:
+      - run:
+          name: Upgrade Docker CE
+          command: |
+            sudo apt-get update
+            sudo apt-get install docker-ce=18.03.1~ce-0~ubuntu
+      - run:
+          name: Upgrade Docker Compose
+          command: |
+            sudo curl -L https://github.com/docker/compose/releases/download/1.21.2/docker-compose-$(uname -s)-$(uname -m) -o /usr/local/bin/docker-compose
+            sudo chmod +x /usr/local/bin/docker-compose
+      - checkout
+      - run:
+          name: Git submodules sync
+          command: |
+            git submodule sync
+            git submodule update --init
+      - run:
+          name: Start docker services for rpmbuild
+          command: |
+            docker-compose -f rpmbuild/docker-compose.yml pull
+            docker-compose -f rpmbuild/docker-compose.yml up -d
+          background: true
+          no_output_timeout: 2h
+      - run:
+          name: Build Docker images
+          command: docker-compose build --no-cache --pull
+      - run:
+          name: Build RPM packages
+          command: docker-compose up
+      - run:
+          name: Copy RPM packages
+          command: |
+            rm -rf ~/el6 ~/el7
+            mkdir -p ~/el6 ~/el7
+            docker cp rpmbuild_webrepo_1:/home/centos-6/rpmbuild/RPMS ~/el6/
+            docker cp rpmbuild_webrepo_1:/home/centos-7/rpmbuild/RPMS ~/el7/
+            rm -rf ~/el*/RPMS/repodata
+      - run:
+          name: Upload Docker images
+          command: |
+            docker login -u $DOCKER_USER -p $DOCKER_PASS
+            docker push aursu/peclbuild:7-msgpack
+            docker push aursu/peclbuild:6-msgpack
+      - store_artifacts:
+          path: ~/el6/RPMS
+      - store_artifacts:
+          path: ~/el7/RPMS
+  build5:
+    machine:
+      docker_layer_caching: true
+    steps:
+      - run:
+          name: Upgrade Docker CE
+          command: |
+            sudo apt-get update
+            sudo apt-get install docker-ce=18.03.1~ce-0~ubuntu
+      - run:
+          name: Upgrade Docker Compose
+          command: |
+            sudo curl -L https://github.com/docker/compose/releases/download/1.21.2/docker-compose-$(uname -s)-$(uname -m) -o /usr/local/bin/docker-compose
+            sudo chmod +x /usr/local/bin/docker-compose
+      - checkout
+      - run:
+          name: Git submodules sync
+          command: |
+            git submodule sync
+            git submodule update --init
+      - run:
+          name: Start docker services for rpmbuild
+          command: |
+            docker-compose -f rpmbuild/docker-compose.yml pull
+            docker-compose -f rpmbuild/docker-compose.yml up -d
+          background: true
+          no_output_timeout: 2h
+      - run:
+          name: Build Docker images (PHP 5)
+          command: docker-compose -f docker-compose.php5.yml build --no-cache --pull
+      - run:
+          name: Build RPM packages (PHP 5)
+          command: docker-compose -f docker-compose.php5.yml up
+      - run:
+          name: Copy RPM packages (PHP 5)
+          command: |
+            rm -rf ~/php5
+            mkdir -p ~/php5/el6 ~/php5/el7
+            docker cp rpmbuild_webrepo_1:/home/centos-6/rpmbuild/RPMS ~/php5/el6/
+            docker cp rpmbuild_webrepo_1:/home/centos-7/rpmbuild/RPMS ~/php5/el7/
+            rm -rf ~/php5/*/RPMS/repodata
+      - run:
+          name: Upload Docker images (PHP 5)
+          command: |
+            docker login -u $DOCKER_USER -p $DOCKER_PASS
+            docker push aursu/peclbuild:7-msgpack-php5
+            docker push aursu/peclbuild:6-msgpack-php5
+      - store_artifacts:
+          path: ~/php5
+workflows:
+  version: 2
+  msgpackbuild:
+    jobs:
+      - build
+      - build5
