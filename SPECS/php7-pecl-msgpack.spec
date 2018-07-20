@@ -20,7 +20,7 @@
 Summary:       API for communicating with MessagePack serialization
 Name:          php-pecl-msgpack
 Version:       2.0.2
-Release:       6%{?dist}
+Release:       7%{?dist}
 License:       BSD
 Group:         Development/Languages
 URL:           http://pecl.php.net/package/msgpack
@@ -38,6 +38,9 @@ Provides:      bundled(msgpack)
 # https://github.com/msgpack/msgpack-php/issues/25
 ExcludeArch: ppc64
 
+Requires(post): %{__pecl}
+Requires(postun): %{__pecl}
+
 Requires:      php(zend-abi) = %{php_zend_api}
 Requires:      php(api) = %{php_core_api}
 
@@ -46,6 +49,11 @@ Provides:      php-%{pecl_name}%{?_isa} = %{version}
 Provides:      php-pecl(%{pecl_name}) = %{version}
 Provides:      php-pecl(%{pecl_name})%{?_isa} = %{version}
 
+%if 0%{?fedora} < 20 && 0%{?rhel} < 7
+# Filter shared private
+%{?filter_provides_in: %filter_provides_in %{_libdir}/.*\.so$}
+%{?filter_setup}
+%endif
 
 %description
 This extension provide API for communicating with MessagePack serialization.
@@ -191,6 +199,13 @@ REPORT_EXIT_STATUS=1 \
 %{__ztsphp} -n run-tests.php --show-diff
 %endif
 
+%post
+%{pecl_install} %{pecl_xmldir}/%{name}.xml >/dev/null || :
+
+%postun
+if [ $1 -eq 0 ] ; then
+    %{pecl_uninstall} %{pecl_name} >/dev/null || :
+fi
 
 %files
 %license NTS/LICENSE
@@ -216,6 +231,9 @@ REPORT_EXIT_STATUS=1 \
 
 
 %changelog
+* Fri Jul 20 2018 Alexander Ursu <alexander.ursu@gmail.com> - 2.0.2-7
+- Build for CentOS
+
 * Mon Jan 29 2018 Remi Collet <remi@remirepo.net> - 2.0.2-6
 - undefine _strict_symbol_defs_build
 
