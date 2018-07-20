@@ -12,18 +12,15 @@
 
 %global pecl_name   msgpack
 %global with_zts    0%{?__ztsphp:1}
-%if "%{php_version}" < "5.6"
-%global ini_name  %{pecl_name}.ini
-%else
 %global ini_name  40-%{pecl_name}.ini
-%endif
+
 # system library is outdated, and bundled library includes not yet released changes
 %global        with_msgpack 0
 
 Summary:       API for communicating with MessagePack serialization
 Name:          php-pecl-msgpack
 Version:       0.5.7
-Release:       2%{?dist}
+Release:       3%{?dist}
 License:       BSD
 Group:         Development/Languages
 URL:           http://pecl.php.net/package/msgpack
@@ -225,6 +222,9 @@ fi
 
 
 %changelog
+* Fri Jul 20 2018 Alexander Ursu <alexander.ursu@gmail.com> - 0.5.7-3
+- Build for PHP 5.6
+
 * Thu Feb 04 2016 Fedora Release Engineering <releng@fedoraproject.org> - 0.5.7-2
 - Rebuilt for https://fedoraproject.org/wiki/Fedora_24_Mass_Rebuild
 
