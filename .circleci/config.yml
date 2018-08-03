@@ -65,6 +65,7 @@ jobs:
     machine:
       docker_layer_caching: true
     environment:
+      BINTRAY_REPO: php5custom
       PACKAGE_VCS_URL: https://github.com/aursu/rpmbuild-php-msgpack
     steps:
       - run:
