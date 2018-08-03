@@ -43,6 +43,11 @@ jobs:
               -e BINTRAY_API_KEY=$BINTRAY_API_KEY \
               -e BINTRAY_REPO=$BINTRAY_REPO \
               -e PACKAGE_VCS_URL=$PACKAGE_VCS_URL centos7bintray
+            docker-compose -f rpmbuild/docker-compose.bintray.yml run --rm \
+              -e BINTRAY_USER=$BINTRAY_USER \
+              -e BINTRAY_API_KEY=$BINTRAY_API_KEY \
+              -e BINTRAY_REPO=$BINTRAY_REPO \
+              -e PACKAGE_VCS_URL=$PACKAGE_VCS_URL centos6bintray
       - run:
           name: Copy RPM packages
           command: |
@@ -100,6 +105,11 @@ jobs:
       - run:
           name: Upload RPM packages into Bintray
           command: |
+            docker-compose -f rpmbuild/docker-compose.bintray.yml run --rm \
+              -e BINTRAY_USER=$BINTRAY_USER \
+              -e BINTRAY_API_KEY=$BINTRAY_API_KEY \
+              -e BINTRAY_REPO=$BINTRAY_REPO \
+              -e PACKAGE_VCS_URL=$PACKAGE_VCS_URL centos7bintray
             docker-compose -f rpmbuild/docker-compose.bintray.yml run --rm \
               -e BINTRAY_USER=$BINTRAY_USER \
               -e BINTRAY_API_KEY=$BINTRAY_API_KEY \
