@@ -1,9 +1,10 @@
 version: 2
 jobs:
-  build:
+  build71:
     machine:
       docker_layer_caching: true
     environment:
+      BINTRAY_REPO: custom
       PACKAGE_VCS_URL: https://github.com/aursu/rpmbuild-php-msgpack
     steps:
       - run:
@@ -14,7 +15,7 @@ jobs:
       - run:
           name: Upgrade Docker Compose
           command: |
-            sudo curl -L https://github.com/docker/compose/releases/download/1.21.2/docker-compose-$(uname -s)-$(uname -m) -o /usr/local/bin/docker-compose
+            sudo curl -L https://github.com/docker/compose/releases/download/1.23.2/docker-compose-$(uname -s)-$(uname -m) -o /usr/local/bin/docker-compose
             sudo chmod +x /usr/local/bin/docker-compose
       - checkout
       - run:
@@ -23,10 +24,14 @@ jobs:
             git submodule sync
             git submodule update --init
       - run:
-          name: Start docker services for rpmbuild
+          name: Pull images for RPM build docker services
           command: |
             docker-compose -f rpmbuild/docker-compose.yml pull
-            docker-compose -f rpmbuild/docker-compose.yml up -d
+            docker-compose -f rpmbuild/docker-compose.bintray.yml pull
+            docker-compose -f rpmbuild/docker-compose.refresh.yml pull
+      - run:
+          name: Start docker services for rpmbuild
+          command: docker-compose -f rpmbuild/docker-compose.yml up -d
           background: true
           no_output_timeout: 2h
       - run:
@@ -38,7 +43,6 @@ jobs:
       - run:
           name: Upload RPM packages into Bintray
           command: |
-            docker-compose -f rpmbuild/docker-compose.bintray.yml pull
             docker-compose -f rpmbuild/docker-compose.bintray.yml run --rm \
               -e BINTRAY_USER=$BINTRAY_USER \
               -e BINTRAY_API_KEY=$BINTRAY_API_KEY \
@@ -50,23 +54,19 @@ jobs:
               -e BINTRAY_REPO=$BINTRAY_REPO \
               -e PACKAGE_VCS_URL=$PACKAGE_VCS_URL centos6bintray
       - run:
-          name: Copy RPM packages
+          name: refresh repositories
           command: |
-            rm -rf ~/el6 ~/el7
-            mkdir -p ~/el6 ~/el7
-            docker cp rpmbuild_webrepo_1:/home/centos-6/rpmbuild/RPMS ~/el6/
-            docker cp rpmbuild_webrepo_1:/home/centos-7/rpmbuild/RPMS ~/el7/
-            rm -rf ~/el*/RPMS/repodata
+            docker-compose -f rpmbuild/docker-compose.refresh.yml run --rm centos7refresh
+            docker-compose -f rpmbuild/docker-compose.refresh.yml run --rm centos6refresh
       - run:
-          name: Upload Docker images
+          name: Build php-pecl-msgpack build Docker images (PHP 7.1)
+          command: docker-compose -f build/docker-compose.yml build --no-cache --pull
+      - run:
+          name: Build php-pecl-msgpack build Docker images (PHP 7.1)
           command: |
             docker login -u $DOCKER_USER -p $DOCKER_PASS
-            docker push aursu/peclbuild:7-msgpack
-            docker push aursu/peclbuild:6-msgpack
-      - store_artifacts:
-          path: ~/el6/RPMS
-      - store_artifacts:
-          path: ~/el7/RPMS
+            docker push aursu/peclbuild:6-php-msgpack-7.1
+            docker push aursu/peclbuild:7-php-msgpack-7.1
   build5:
     machine:
       docker_layer_caching: true
@@ -82,7 +82,7 @@ jobs:
       - run:
           name: Upgrade Docker Compose
           command: |
-            sudo curl -L https://github.com/docker/compose/releases/download/1.21.2/docker-compose-$(uname -s)-$(uname -m) -o /usr/local/bin/docker-compose
+            sudo curl -L https://github.com/docker/compose/releases/download/1.23.2/docker-compose-$(uname -s)-$(uname -m) -o /usr/local/bin/docker-compose
             sudo chmod +x /usr/local/bin/docker-compose
       - checkout
       - run:
@@ -91,10 +91,14 @@ jobs:
             git submodule sync
             git submodule update --init
       - run:
-          name: Start docker services for rpmbuild
+          name: Pull images for RPM build docker services
           command: |
             docker-compose -f rpmbuild/docker-compose.yml pull
-            docker-compose -f rpmbuild/docker-compose.yml up -d
+            docker-compose -f rpmbuild/docker-compose.bintray.yml pull
+            docker-compose -f rpmbuild/docker-compose.refresh.yml pull
+      - run:
+          name: Start docker services for rpmbuild
+          command: docker-compose -f rpmbuild/docker-compose.yml up -d
           background: true
           no_output_timeout: 2h
       - run:
@@ -106,7 +110,6 @@ jobs:
       - run:
           name: Upload RPM packages into Bintray
           command: |
-            docker-compose -f rpmbuild/docker-compose.bintray.yml pull
             docker-compose -f rpmbuild/docker-compose.bintray.yml run --rm \
               -e BINTRAY_USER=$BINTRAY_USER \
               -e BINTRAY_API_KEY=$BINTRAY_API_KEY \
@@ -118,24 +121,85 @@ jobs:
               -e BINTRAY_REPO=$BINTRAY_REPO \
               -e PACKAGE_VCS_URL=$PACKAGE_VCS_URL centos6bintray
       - run:
-          name: Copy RPM packages (PHP 5)
+          name: refresh repositories
           command: |
-            rm -rf ~/php5
-            mkdir -p ~/php5/el6 ~/php5/el7
-            docker cp rpmbuild_webrepo_1:/home/centos-6/rpmbuild/RPMS ~/php5/el6/
-            docker cp rpmbuild_webrepo_1:/home/centos-7/rpmbuild/RPMS ~/php5/el7/
-            rm -rf ~/php5/*/RPMS/repodata
+            docker-compose -f rpmbuild/docker-compose.refresh.yml run --rm centos7refresh
+            docker-compose -f rpmbuild/docker-compose.refresh.yml run --rm centos6refresh
       - run:
-          name: Upload Docker images (PHP 5)
+          name: Build php-pecl-msgpack build Docker images (PHP 5)
+          command: docker-compose -f build/docker-compose.php5.yml build --no-cache --pull
+      - run:
+          name: Upload php-pecl-msgpack build Docker images (PHP 5)
           command: |
             docker login -u $DOCKER_USER -p $DOCKER_PASS
-            docker push aursu/peclbuild:7-msgpack-php5
-            docker push aursu/peclbuild:6-msgpack-php5
-      - store_artifacts:
-          path: ~/php5
+            docker push aursu/peclbuild:6-php-msgpack-5.6
+            docker push aursu/peclbuild:7-php-msgpack-5.6
+  build73:
+    machine:
+      docker_layer_caching: true
+    environment:
+      BINTRAY_REPO: php73custom
+      PACKAGE_VCS_URL: https://github.com/aursu/rpmbuild-php-msgpack
+    steps:
+      - run:
+          name: Upgrade Docker CE
+          command: |
+            sudo apt-get update
+            sudo apt-get install docker-ce=18.03.1~ce-0~ubuntu
+      - run:
+          name: Upgrade Docker Compose
+          command: |
+            sudo curl -L https://github.com/docker/compose/releases/download/1.23.2/docker-compose-$(uname -s)-$(uname -m) -o /usr/local/bin/docker-compose
+            sudo chmod +x /usr/local/bin/docker-compose
+      - checkout
+      - run:
+          name: Git submodules sync
+          command: |
+            git submodule sync
+            git submodule update --init
+      - run:
+          name: Pull images for RPM build docker services
+          command: |
+            docker-compose -f rpmbuild/docker-compose.yml pull
+            docker-compose -f rpmbuild/docker-compose.bintray.yml pull
+            docker-compose -f rpmbuild/docker-compose.refresh.yml pull
+      - run:
+          name: Start docker services for rpmbuild
+          command: docker-compose -f rpmbuild/docker-compose.yml up -d
+          background: true
+          no_output_timeout: 2h
+      - run:
+          name: Build Docker images (PHP 7.3)
+          command: docker-compose -f docker-compose.php73.yml build --no-cache --pull
+      - run:
+          name: Build RPM packages (PHP 7.3)
+          command: docker-compose -f docker-compose.php73.yml up
+      - run:
+          name: Upload RPM packages into Bintray
+          command: |
+            docker-compose -f rpmbuild/docker-compose.bintray.yml run --rm \
+              -e BINTRAY_USER=$BINTRAY_USER \
+              -e BINTRAY_API_KEY=$BINTRAY_API_KEY \
+              -e BINTRAY_REPO=$BINTRAY_REPO \
+              -e PACKAGE_VCS_URL=$PACKAGE_VCS_URL centos7bintray
+      - run:
+          name: refresh repositories
+          command: |
+            docker-compose -f rpmbuild/docker-compose.refresh.yml run --rm centos7refresh
+            docker-compose -f rpmbuild/docker-compose.refresh.yml run --rm centos6refresh
+      - run:
+          name: Build php-pecl-msgpack build Docker images (PHP 7.3)
+          command: docker-compose -f build/docker-compose.php73.yml build --no-cache --pull
+      - run:
+          name: Upload php-pecl-msgpack build Docker images (PHP 7.3)
+          command: |
+            docker login -u $DOCKER_USER -p $DOCKER_PASS
+            docker push aursu/peclbuild:7-php-msgpack-7.3
+
 workflows:
   version: 2
   msgpackbuild:
     jobs:
-      - build
+      - build73
+      - build71
       - build5

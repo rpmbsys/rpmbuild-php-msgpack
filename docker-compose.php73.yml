@@ -1,24 +1,16 @@
 version: "3.5"
 services:
-  centos7msgpack:
+  centos7msgpackphp73:
     volumes:
       - rpms:/home/centos/rpmbuild/SRPMS
       - rpm7:/home/centos/rpmbuild/RPMS
     build:
       context: .
-  centos6msgpack:
-    volumes:
-      - rpms:/home/centos/rpmbuild/SRPMS
-      - rpm6:/home/centos/rpmbuild/RPMS
-    build:
-      context: .
       args:
-        centos: 6
+        image: php-7.3
 
 volumes:
   rpms:
     name: rpms
-  rpm6:
-    name: rpm6
   rpm7:
     name: rpm7

@@ -1,6 +1,7 @@
 ARG centos=7
+ARG image=php-5.6
 
-FROM aursu/pearbuild:${centos}-build-php5
+FROM aursu/pearbuild:${centos}-${image}
 
 COPY SOURCES ${BUILD_TOPDIR}/SOURCES
 COPY SPECS ${BUILD_TOPDIR}/SPECS

@@ -1,5 +1,5 @@
 ARG centos=7
-ARG image=build
+ARG image=php-7.1
 
 FROM aursu/pearbuild:${centos}-${image}
 

@@ -1,6 +1,13 @@
 version: "3.5"
 services:
-  centos6msgpackbuildphp5:
+  centos7msgpackphp5:
+    volumes:
+      - rpms:/home/centos/rpmbuild/SRPMS
+      - rpm7:/home/centos/rpmbuild/RPMS
+    build:
+      context: .
+      dockerfile: Dockerfile.php-5
+  centos6msgpackphp5:
     volumes:
       - rpms:/home/centos/rpmbuild/SRPMS
       - rpm6:/home/centos/rpmbuild/RPMS
@@ -9,15 +16,6 @@ services:
       dockerfile: Dockerfile.php-5
       args:
         centos: 6
-    image: aursu/peclbuild:6-msgpack-php5
-  centos7msgpackbuildphp5:
-    volumes:
-      - rpms:/home/centos/rpmbuild/SRPMS
-      - rpm7:/home/centos/rpmbuild/RPMS
-    build:
-      context: .
-      dockerfile: Dockerfile.php-5
-    image: aursu/peclbuild:7-msgpack-php5
 
 volumes:
   rpms:
