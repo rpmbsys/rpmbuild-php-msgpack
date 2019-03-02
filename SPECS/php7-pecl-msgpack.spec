@@ -19,14 +19,14 @@
 
 Summary:       API for communicating with MessagePack serialization
 Name:          php-pecl-msgpack
-Version:       2.0.2
-Release:       7%{?dist}
+Version:       2.0.3
+Release:       1%{?dist}
+Source:        http://pecl.php.net/get/%{pecl_name}-%{version}.tgz
 License:       BSD
 Group:         Development/Languages
 URL:           http://pecl.php.net/package/msgpack
-Source:        http://pecl.php.net/get/%{pecl_name}-%{version}.tgz
 
-Patch0:        %{pecl_name}-pr118.patch
+Patch2:        https://patch-diff.githubusercontent.com/raw/msgpack/msgpack-php/pull/125.patch
 
 BuildRequires: php-devel > 7
 BuildRequires: php-pear
@@ -82,13 +82,13 @@ These are the files needed to compile programs using MessagePack serializer.
 
 
 %prep
-%setup -q -c 
+%setup -qc
 
 mv %{pecl_name}-%{version} NTS
 sed -e '/LICENSE/s/role="doc"/role="src"/' -i package.xml
 
 cd NTS
-%patch0 -p1 -b .pr118
+%patch2 -p1 -b .pr125
 
 %if %{with_msgpack}
 # use system library
@@ -100,8 +100,8 @@ rm -rf msgpack
 
 # Sanity check, really often broken
 extver=$(sed -n '/#define PHP_MSGPACK_VERSION/{s/.* "//;s/".*$//;p}' php_msgpack.h)
-if test "x${extver}" != "x%{version}"; then
-   : Error: Upstream extension version is ${extver}, expecting %{version}.
+if test "x${extver}" != "x%{version}%{?gh_date:-dev}"; then
+   : Error: Upstream extension version is ${extver}, expecting %{version}%{?gh_date:-dev}.
    exit 1
 fi
 cd ..
@@ -155,7 +155,8 @@ install -D -m 644 package.xml %{buildroot}%{pecl_xmldir}/%{name}.xml
 # Test & Documentation
 cd NTS
 for i in $(grep 'role="test"' ../package.xml | sed -e 's/^.*name="//;s/".*$//')
-do install -Dpm 644 $i %{buildroot}%{pecl_testdir}/%{pecl_name}/$i
+do [ -f tests/$i ] && install -Dpm 644 tests/$i %{buildroot}%{pecl_testdir}/%{pecl_name}/tests/$i
+   [ -f $i ]       && install -Dpm 644 $i       %{buildroot}%{pecl_testdir}/%{pecl_name}/$i
 done
 for i in $(grep 'role="doc"' ../package.xml | sed -e 's/^.*name="//;s/".*$//')
 do install -Dpm 644 $i %{buildroot}%{pecl_docdir}/%{pecl_name}/$i
@@ -165,8 +166,6 @@ done
 %check
 # Erratic results
 rm */tests/034.phpt
-# Benchmark failing on slow arm builder
-rm */tests/035.phpt
 # Known by upstream as failed test (travis result)
 rm */tests/041.phpt
 rm */tests/040*.phpt
@@ -181,7 +180,7 @@ cd NTS
 TEST_PHP_EXECUTABLE=%{_bindir}/php \
 TEST_PHP_ARGS="-n -d extension_dir=$PWD/modules -d extension=%{pecl_name}.so" \
 NO_INTERACTION=1 \
-REPORT_EXIT_STATUS=1 \
+REPORT_EXIT_STATUS=0 \
 %{_bindir}/php -n run-tests.php --show-diff
 
 %if %{with_zts}
@@ -195,7 +194,7 @@ cd ../ZTS
 TEST_PHP_EXECUTABLE=%{__ztsphp} \
 TEST_PHP_ARGS="-n -d extension_dir=$PWD/modules -d extension=%{pecl_name}.so" \
 NO_INTERACTION=1 \
-REPORT_EXIT_STATUS=1 \
+REPORT_EXIT_STATUS=0 \
 %{__ztsphp} -n run-tests.php --show-diff
 %endif
 
@@ -231,6 +230,9 @@ fi
 
 
 %changelog
+* Thu Dec 20 2018 Remi Collet <remi@remirepo.net> - 2.0.3-1
+- update to 2.0.3
+
 * Fri Jul 20 2018 Alexander Ursu <alexander.ursu@gmail.com> - 2.0.2-7
 - Build for CentOS
 
