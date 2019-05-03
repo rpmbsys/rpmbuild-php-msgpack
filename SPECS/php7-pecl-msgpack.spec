@@ -75,7 +75,7 @@ This extension is still EXPERIMENTAL.
 %package devel
 Summary:       MessagePack developer files (header)
 Group:         Development/Libraries
-Requires:      php-pecl-%{pecl_name}%{?_isa} = %{version}-%{release}
+Requires:      php7-pecl-%{pecl_name}%{?_isa} = %{version}-%{release}
 Requires:      php7-devel%{?_isa}
 
 %description devel
