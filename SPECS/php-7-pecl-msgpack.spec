@@ -1,6 +1,6 @@
 # Fedora spec file for php-pecl-msgpack
 #
-# Copyright (c) 2012-2016 Remi Collet
+# Copyright (c) 2012-2018 Remi Collet
 # License: CC-BY-SA
 # http://creativecommons.org/licenses/by-sa/4.0/
 #
@@ -11,13 +11,14 @@
 %undefine _strict_symbol_defs_build
 
 %global pecl_name   msgpack
+%global with_zts    0%{?__ztsphp:1}
 %global ini_name  40-%{pecl_name}.ini
 # system library is outdated, and bundled library includes not yet released changes
 # e.g. missing template_callback_str in 1.4.1
 %global        with_msgpack 0
 
 Summary:       API for communicating with MessagePack serialization
-Name:          php7-pecl-msgpack
+Name:          php-pecl-msgpack
 Version:       2.0.3
 Release:       1%{?dist}
 Source:        http://pecl.php.net/get/%{pecl_name}-%{version}.tgz
@@ -27,8 +28,8 @@ URL:           http://pecl.php.net/package/msgpack
 
 Patch2:        https://patch-diff.githubusercontent.com/raw/msgpack/msgpack-php/pull/125.patch
 
-BuildRequires: php7-devel
-BuildRequires: php7-pear
+BuildRequires: php-devel > 7
+BuildRequires: php-pear
 %if %{with_msgpack}
 BuildRequires: msgpack-devel
 %else
@@ -44,9 +45,7 @@ Requires:      php(zend-abi) = %{php_zend_api}
 Requires:      php(api) = %{php_core_api}
 
 Provides:      php-%{pecl_name} = %{version}
-Provides:      php7-%{pecl_name} = %{version}
 Provides:      php-%{pecl_name}%{?_isa} = %{version}
-Provides:      php7-%{pecl_name}%{?_isa} = %{version}
 Provides:      php-pecl(%{pecl_name}) = %{version}
 Provides:      php-pecl(%{pecl_name})%{?_isa} = %{version}
 
@@ -76,7 +75,7 @@ This extension is still EXPERIMENTAL.
 Summary:       MessagePack developer files (header)
 Group:         Development/Libraries
 Requires:      php-pecl-%{pecl_name}%{?_isa} = %{version}-%{release}
-Requires:      php7-devel%{?_isa}
+Requires:      php-devel%{?_isa}
 
 %description devel
 These are the files needed to compile programs using MessagePack serializer.
@@ -107,6 +106,11 @@ if test "x${extver}" != "x%{version}%{?gh_date:-dev}"; then
 fi
 cd ..
 
+%if %{with_zts}
+# duplicate for ZTS build
+cp -pr NTS ZTS
+%endif
+
 # Drop in the bit of configuration
 cat > %{ini_name} << 'EOF'
 ; Enable MessagePack extension module
@@ -122,16 +126,28 @@ EOF
 
 %build
 cd NTS
-%{_bindir}/phpize7
-%configure --with-php-config=%{_bindir}/php7-config
+%{_bindir}/phpize
+%configure --with-php-config=%{_bindir}/php-config
 make %{?_smp_mflags}
 
+%if %{with_zts}
+cd ../ZTS
+%{_bindir}/zts-phpize
+%configure --with-php-config=%{_bindir}/zts-php-config
+make %{?_smp_mflags}
+%endif
 
 
 %install
 # Install the NTS stuff
 make -C NTS install INSTALL_ROOT=%{buildroot}
 install -D -m 644 %{ini_name} %{buildroot}%{php_inidir}/%{ini_name}
+
+%if %{with_zts}
+# Install the ZTS stuff
+make -C ZTS install INSTALL_ROOT=%{buildroot}
+install -D -m 644 %{ini_name} %{buildroot}%{php_ztsinidir}/%{ini_name}
+%endif
 
 # Install the package XML file
 install -D -m 644 package.xml %{buildroot}%{pecl_xmldir}/%{name}.xml
@@ -161,12 +177,26 @@ cd NTS
     --modules | grep %{pecl_name}
 
 : Upstream test suite  for NTS extension
-TEST_PHP_EXECUTABLE=%{_bindir}/php7 \
+TEST_PHP_EXECUTABLE=%{_bindir}/php \
 TEST_PHP_ARGS="-n -d extension_dir=$PWD/modules -d extension=%{pecl_name}.so" \
 NO_INTERACTION=1 \
 REPORT_EXIT_STATUS=0 \
-%{_bindir}/php7 -n run-tests.php --show-diff
+%{_bindir}/php -n run-tests.php --show-diff
 
+%if %{with_zts}
+cd ../ZTS
+: Minimal load test for ZTS extension
+%{__ztsphp} --no-php-ini \
+    --define extension=%{buildroot}%{php_ztsextdir}/%{pecl_name}.so \
+    --modules | grep %{pecl_name}
+
+: Upstream test suite  for ZTS extension
+TEST_PHP_EXECUTABLE=%{__ztsphp} \
+TEST_PHP_ARGS="-n -d extension_dir=$PWD/modules -d extension=%{pecl_name}.so" \
+NO_INTERACTION=1 \
+REPORT_EXIT_STATUS=0 \
+%{__ztsphp} -n run-tests.php --show-diff
+%endif
 
 %post
 %{pecl_install} %{pecl_xmldir}/%{name}.xml >/dev/null || :
@@ -184,10 +214,19 @@ fi
 %config(noreplace) %{php_inidir}/%{ini_name}
 %{php_extdir}/%{pecl_name}.so
 
+%if %{with_zts}
+%config(noreplace) %{php_ztsinidir}/%{ini_name}
+%{php_ztsextdir}/%{pecl_name}.so
+%endif
+
 
 %files devel
 %doc %{pecl_testdir}/%{pecl_name}
 %{php_incldir}/ext/%{pecl_name}
+
+%if %{with_zts}
+%{php_ztsincldir}/ext/%{pecl_name}
+%endif
 
 
 %changelog
@@ -274,3 +313,4 @@ fi
 
 * Sat Sep 15 2012 Remi Collet <remi@fedoraproject.org> - 0.5.2-1
 - initial package, version 0.5.2 (beta)
+
