@@ -67,6 +67,7 @@ jobs:
             docker login -u $DOCKER_USER -p $DOCKER_PASS
             docker push aursu/peclbuild:6-php-msgpack-7.1
             docker push aursu/peclbuild:7-php-msgpack-7.1
+            docker push aursu/peclbuild:7-php7-msgpack-7.1
   build5:
     machine:
       docker_layer_caching: true
