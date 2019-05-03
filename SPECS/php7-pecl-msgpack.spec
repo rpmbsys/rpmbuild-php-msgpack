@@ -19,7 +19,7 @@
 Summary:       API for communicating with MessagePack serialization
 Name:          php7-pecl-msgpack
 Version:       2.0.3
-Release:       1%{?dist}
+Release:       2%{?dist}
 Source:        http://pecl.php.net/get/%{pecl_name}-%{version}.tgz
 License:       BSD
 Group:         Development/Languages
@@ -191,6 +191,9 @@ fi
 
 
 %changelog
+* Fri May  3 2019 Alexander Ursu <alexander.ursu@gmail.com> - 2.0.3-2
+- Corrected dependencies for devel package
+
 * Thu Dec 20 2018 Remi Collet <remi@remirepo.net> - 2.0.3-1
 - update to 2.0.3
 
