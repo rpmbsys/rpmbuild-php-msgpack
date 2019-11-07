@@ -9,6 +9,16 @@ services:
       args:
         image: php-igbinary-7.3
     image: aursu/peclbuild:7-php-msgpack-7.3
+  centos8msgpackphp73build:
+    networks:
+      - buildnet
+    build:
+      network: buildnet
+      context: .
+      args:
+        centos: 8
+        image: php-igbinary-7.3
+    image: aursu/peclbuild:8-php-msgpack-7.3
 
 networks:
   buildnet:

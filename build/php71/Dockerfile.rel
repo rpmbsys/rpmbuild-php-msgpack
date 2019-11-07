@@ -3,6 +3,6 @@ ARG image=php7-igbinary-7.1
 
 FROM aursu/peclbuild:${centos}-${image}
 
-RUN yum -y --disablerepo=* --enablerepo=custom install \
+RUN yum -y --enablerepo=custom --enablerepo=bintray-php71custom install \
         php7-pecl-msgpack-devel \
     && yum clean all && rm -rf /var/cache/yum

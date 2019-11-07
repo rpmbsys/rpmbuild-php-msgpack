@@ -8,9 +8,20 @@ services:
       context: .
       args:
         image: php-7.3
+  centos8msgpackphp73:
+    volumes:
+      - rpms:/home/centos/rpmbuild/SRPMS
+      - rpm8:/home/centos/rpmbuild/RPMS
+    build:
+      context: .
+      args:
+        centos: 8
+        image: php-7.3
 
 volumes:
   rpms:
     name: rpms
   rpm7:
     name: rpm7
+  rpm8:
+    name: rpm8
