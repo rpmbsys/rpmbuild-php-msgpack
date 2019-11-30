@@ -1,0 +1,26 @@
+version: "3.5"
+services:
+  centos7msgpackphp74build:
+    networks:
+      - buildnet
+    build:
+      network: buildnet
+      context: .
+      args:
+        image: php-igbinary-7.4
+    image: aursu/peclbuild:7-php-msgpack-7.4
+  centos8msgpackphp74build:
+    networks:
+      - buildnet
+    build:
+      network: buildnet
+      context: .
+      args:
+        centos: 8
+        image: php-igbinary-7.4
+    image: aursu/peclbuild:8-php-msgpack-7.4
+
+networks:
+  buildnet:
+    external: true
+    name: buildnet

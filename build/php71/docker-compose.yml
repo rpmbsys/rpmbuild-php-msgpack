@@ -4,35 +4,35 @@ services:
     networks:
       - buildnet
     build:
-      context: .
       network: buildnet
+      context: .
     image: aursu/peclbuild:7-php-msgpack-7.1
   centos7msgpackphp7buildrel:
     networks:
       - buildnet
     build:
+      network: buildnet
       context: .
       dockerfile: Dockerfile.rel
-      network: buildnet
     image: aursu/peclbuild:7-php7-msgpack-7.1
   centos8msgpackphp7build:
     networks:
       - buildnet
     build:
+      network: buildnet
       context: .
       args:
         centos: 8
-      network: buildnet
     image: aursu/peclbuild:8-php-msgpack-7.1
   centos8msgpackphp7buildrel:
     networks:
       - buildnet
     build:
+      network: buildnet
       context: .
       args:
         centos: 8
       dockerfile: Dockerfile.rel
-      network: buildnet
     image: aursu/peclbuild:8-php7-msgpack-7.1
 
 networks:

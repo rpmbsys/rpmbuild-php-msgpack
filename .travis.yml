@@ -10,21 +10,16 @@ addons:
 
 env:
   global:
-    - DOCKER_COMPOSE_VERSION=1.24.1
-    - PACKAGE_VCS_URL=https://github.com/aursu/rpmbuild-php-igbinary
+    - PACKAGE_VCS_URL=https://github.com/aursu/rpmbuild-php-msgpack
   jobs:
-    - BUILD_COMPOSE_FILE=docker-compose.yml       BINTRAY_REPO=php71custom BUILD=centos7msgpack     UPLOADER=centos7bintray
-    - BUILD_COMPOSE_FILE=docker-compose.yml       BINTRAY_REPO=php71custom BUILD=centos7msgpackrel  UPLOADER=centos7bintray
-    - BUILD_COMPOSE_FILE=docker-compose.yml       BINTRAY_REPO=php71custom BUILD=centos8msgpack     UPLOADER=centos8bintray
-    - BUILD_COMPOSE_FILE=docker-compose.yml       BINTRAY_REPO=php71custom BUILD=centos8msgpackrel  UPLOADER=centos8bintray
-    - BUILD_COMPOSE_FILE=docker-compose.php73.yml BINTRAY_REPO=php73custom BUILD=centos7msgpackphp73    UPLOADER=centos7bintray
-    - BUILD_COMPOSE_FILE=docker-compose.php73.yml BINTRAY_REPO=php73custom BUILD=centos8msgpackphp73    UPLOADER=centos8bintray
-
-before_install:
-  - sudo curl -L https://github.com/docker/compose/releases/download/${DOCKER_COMPOSE_VERSION}/docker-compose-$(uname -s)-$(uname -m) -o /usr/local/bin/docker-compose
-  - sudo chmod +x /usr/local/bin/docker-compose
-
-install: skip
+    - BUILD_COMPOSE_FILE=docker-compose.yml       BINTRAY_REPO=php71custom BUILD=centos7msgpack      UPLOADER=centos7bintray
+    - BUILD_COMPOSE_FILE=docker-compose.yml       BINTRAY_REPO=php71custom BUILD=centos7msgpackrel   UPLOADER=centos7bintray
+    - BUILD_COMPOSE_FILE=docker-compose.yml       BINTRAY_REPO=php71custom BUILD=centos8msgpack      UPLOADER=centos8bintray
+    - BUILD_COMPOSE_FILE=docker-compose.yml       BINTRAY_REPO=php71custom BUILD=centos8msgpackrel   UPLOADER=centos8bintray
+    - BUILD_COMPOSE_FILE=docker-compose.php73.yml BINTRAY_REPO=php73custom BUILD=centos7msgpackphp73 UPLOADER=centos7bintray
+    - BUILD_COMPOSE_FILE=docker-compose.php73.yml BINTRAY_REPO=php73custom BUILD=centos8msgpackphp73 UPLOADER=centos8bintray
+    - BUILD_COMPOSE_FILE=docker-compose.php74.yml BINTRAY_REPO=php74custom BUILD=centos7msgpackphp74 UPLOADER=centos7bintray
+    - BUILD_COMPOSE_FILE=docker-compose.php74.yml BINTRAY_REPO=php74custom BUILD=centos8msgpackphp74 UPLOADER=centos8bintray
 
 before_script:
   - docker-compose -f ${BUILD_COMPOSE_FILE} build --no-cache ${BUILD}
@@ -69,5 +64,19 @@ jobs:
       deploy:
         provider: script
         script: docker-compose -f build/php73/docker-compose.yml push
+        on:
+          all_branches: true
+    - stage: docker
+      before_install:
+        - docker-compose -f rpmbuild/docker-compose.yml pull  centos7repo centos8repo webrepo
+      install:
+        - docker-compose -f rpmbuild/docker-compose.yml up -d  centos7repo centos8repo webrepo
+      script:
+        - docker-compose -f build/php74/docker-compose.yml build --no-cache --pull
+      before_deploy:
+        - docker login -u $DOCKER_USER -p $DOCKER_PASS
+      deploy:
+        provider: script
+        script: docker-compose -f build/php74/docker-compose.yml push
         on:
           all_branches: true
