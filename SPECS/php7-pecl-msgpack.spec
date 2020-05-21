@@ -1,6 +1,6 @@
 # Fedora spec file for php-pecl-msgpack
 #
-# Copyright (c) 2012-2016 Remi Collet
+# Copyright (c) 2012-2020 Remi Collet
 # License: CC-BY-SA
 # http://creativecommons.org/licenses/by-sa/4.0/
 #
@@ -10,29 +10,28 @@
 # we don't want -z defs linker flag
 %undefine _strict_symbol_defs_build
 
+%global upstream_version 2.1.0
 %global pecl_name   msgpack
 %global ini_name  40-%{pecl_name}.ini
 # system library is outdated, and bundled library includes not yet released changes
-# e.g. missing template_callback_str in 1.4.1
+# BTW, only pack_template.h and unpack_template.h headers are used
 %global        with_msgpack 0
 
 Summary:       API for communicating with MessagePack serialization
 Name:          php7-pecl-msgpack
-Version:       2.0.3
-Release:       2%{?dist}
-Source:        http://pecl.php.net/get/%{pecl_name}-%{version}.tgz
+Version:       %{upstream_version}%{?upstream_lower:~%{upstream_lower}}
+Release:       1%{?dist}
+Source:        https://pecl.php.net/get/%{pecl_name}-%{upstream_version}%{?upstream_prever}.tgz
 License:       BSD
 Group:         Development/Languages
-URL:           http://pecl.php.net/package/msgpack
-
-Patch2:        https://patch-diff.githubusercontent.com/raw/msgpack/msgpack-php/pull/125.patch
+URL:           https://pecl.php.net/package/msgpack
 
 BuildRequires: php7-devel
 BuildRequires: php7-pear
 %if %{with_msgpack}
 BuildRequires: msgpack-devel
 %else
-Provides:      bundled(msgpack)
+Provides:      bundled(msgpack) = 3.2.0
 %endif
 # https://github.com/msgpack/msgpack-php/issues/25
 ExcludeArch: ppc64
@@ -85,11 +84,10 @@ These are the files needed to compile programs using MessagePack serializer.
 %prep
 %setup -qc
 
-mv %{pecl_name}-%{version} NTS
+mv %{pecl_name}-%{upstream_version}%{?upstream_prever} NTS
 sed -e '/LICENSE/s/role="doc"/role="src"/' -i package.xml
 
 cd NTS
-%patch2 -p1 -b .pr125
 
 %if %{with_msgpack}
 # use system library
@@ -101,8 +99,8 @@ rm -rf msgpack
 
 # Sanity check, really often broken
 extver=$(sed -n '/#define PHP_MSGPACK_VERSION/{s/.* "//;s/".*$//;p}' php_msgpack.h)
-if test "x${extver}" != "x%{version}%{?gh_date:-dev}"; then
-   : Error: Upstream extension version is ${extver}, expecting %{version}%{?gh_date:-dev}.
+if test "x${extver}" != "x%{upstream_version}%{?upstream_prever}%{?gh_date:-dev}"; then
+   : Error: Upstream extension version is ${extver}, expecting %{upstream_version}%{?upstream_prever}%{?gh_date:-dev}.
    exit 1
 fi
 cd ..
@@ -151,8 +149,6 @@ done
 # Erratic results
 rm */tests/034.phpt
 # Known by upstream as failed test (travis result)
-rm */tests/041.phpt
-rm */tests/040*.phpt
 
 cd NTS
 : Minimal load test for NTS extension
@@ -191,6 +187,9 @@ fi
 
 
 %changelog
+* Mon Mar  2 2020 Remi Collet <remi@remirepo.net> - 2.1.0-1
+- update to 2.1.0
+
 * Fri May  3 2019 Alexander Ursu <alexander.ursu@gmail.com> - 2.0.3-2
 - Corrected dependencies for devel package
 
