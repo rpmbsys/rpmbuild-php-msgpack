@@ -1,125 +1,92 @@
-version: 2
-jobs:
-  build71:
-    machine:
-      image: ubuntu-1604:201903-01
-    environment:
-      BINTRAY_REPO: php71custom
-      PACKAGE_VCS_URL: https://github.com/aursu/rpmbuild-php-msgpack
-    steps:
-      - checkout
-      - run:
-          name: Git submodules sync
-          command: |
-            git submodule sync
-            git submodule update --init
-      - run:
-          name: Pull images for RPM build docker services
-          command: |
-            docker-compose -f rpmbuild/docker-compose.yml pull
-            docker-compose -f rpmbuild/docker-compose.bintray.yml pull
-            docker-compose -f rpmbuild/docker-compose.refresh.yml pull
-      - run:
-          name: Start docker services for rpmbuild
-          command: docker-compose -f rpmbuild/docker-compose.yml up -d
-          background: true
-          no_output_timeout: 2h
-      - run:
-          name: Build Docker images
-          command: docker-compose build --no-cache --pull
-      - run:
-          name: Build RPM packages
-          command: docker-compose up
-      - run:
-          name: Upload RPM packages into Bintray
-          command: |
-            docker-compose -f rpmbuild/docker-compose.bintray.yml run --rm \
-              -e BINTRAY_USER=$BINTRAY_USER \
-              -e BINTRAY_API_KEY=$BINTRAY_API_KEY \
-              -e BINTRAY_REPO=$BINTRAY_REPO \
-              -e PACKAGE_VCS_URL=$PACKAGE_VCS_URL centos7bintray
-            docker-compose -f rpmbuild/docker-compose.bintray.yml run --rm \
-              -e BINTRAY_USER=$BINTRAY_USER \
-              -e BINTRAY_API_KEY=$BINTRAY_API_KEY \
-              -e BINTRAY_REPO=$BINTRAY_REPO \
-              -e PACKAGE_VCS_URL=$PACKAGE_VCS_URL centos8bintray
-      - run:
-          name: refresh repositories
-          command: |
-            docker-compose -f rpmbuild/docker-compose.refresh.yml run --rm centos7refresh
-            docker-compose -f rpmbuild/docker-compose.refresh.yml run --rm centos8refresh
-      - run:
-          name: Build php-pecl-msgpack build Docker images (PHP 7.1)
-          command: docker-compose -f build/php71/docker-compose.yml build --no-cache --pull
-      - run:
-          name: Build php-pecl-msgpack build Docker images (PHP 7.1)
-          command: |
-            docker login -u $DOCKER_USER -p $DOCKER_PASS
-            docker push aursu/peclbuild:7-php-msgpack-7.1
-            docker push aursu/peclbuild:7-php7-msgpack-7.1
-            docker push aursu/peclbuild:8-php-msgpack-7.1
-            docker push aursu/peclbuild:8-php7-msgpack-7.1
-  build73:
-    machine:
-      image: ubuntu-1604:201903-01
-    environment:
-      BINTRAY_REPO: php73custom
-      PACKAGE_VCS_URL: https://github.com/aursu/rpmbuild-php-msgpack
-    steps:
-      - checkout
-      - run:
-          name: Git submodules sync
-          command: |
-            git submodule sync
-            git submodule update --init
-      - run:
-          name: Pull images for RPM build docker services
-          command: |
-            docker-compose -f rpmbuild/docker-compose.yml pull
-            docker-compose -f rpmbuild/docker-compose.bintray.yml pull
-            docker-compose -f rpmbuild/docker-compose.refresh.yml pull
-      - run:
-          name: Start docker services for rpmbuild
-          command: docker-compose -f rpmbuild/docker-compose.yml up -d
-          background: true
-          no_output_timeout: 2h
-      - run:
-          name: Build Docker images (PHP 7.3)
-          command: docker-compose -f docker-compose.php73.yml build --no-cache --pull
-      - run:
-          name: Build RPM packages (PHP 7.3)
-          command: docker-compose -f docker-compose.php73.yml up
-      - run:
-          name: Upload RPM packages into Bintray
-          command: |
-            docker-compose -f rpmbuild/docker-compose.bintray.yml run --rm \
-              -e BINTRAY_USER=$BINTRAY_USER \
-              -e BINTRAY_API_KEY=$BINTRAY_API_KEY \
-              -e BINTRAY_REPO=$BINTRAY_REPO \
-              -e PACKAGE_VCS_URL=$PACKAGE_VCS_URL centos7bintray
-            docker-compose -f rpmbuild/docker-compose.bintray.yml run --rm \
-              -e BINTRAY_USER=$BINTRAY_USER \
-              -e BINTRAY_API_KEY=$BINTRAY_API_KEY \
-              -e BINTRAY_REPO=$BINTRAY_REPO \
-              -e PACKAGE_VCS_URL=$PACKAGE_VCS_URL centos8bintray
-      - run:
-          name: refresh repositories
-          command: |
-            docker-compose -f rpmbuild/docker-compose.refresh.yml run --rm centos7refresh
-            docker-compose -f rpmbuild/docker-compose.refresh.yml run --rm centos8refresh
-      - run:
-          name: Build php-pecl-msgpack build Docker images (PHP 7.3)
-          command: docker-compose -f build/php73/docker-compose.yml build --no-cache --pull
-      - run:
-          name: Upload php-pecl-msgpack build Docker images (PHP 7.3)
-          command: |
-            docker login -u $DOCKER_USER -p $DOCKER_PASS
-            docker push aursu/peclbuild:7-php-msgpack-7.3
-            docker push aursu/peclbuild:8-php-msgpack-7.3
+version: 2.1
+
+orbs:
+  docker-rpmbuild: aursu/rpmbuild@1.1.0
 
 workflows:
-  version: 2
   msgpackbuild:
     jobs:
-      - build73
-      - build71
+      - docker-rpmbuild/build:
+          name: centos7msgpack
+          build_service: centos7msgpack
+          bintray_uploader: centos7bintray
+      - docker-rpmbuild/build:
+          name: centos7msgpackrel
+          build_service: centos7msgpackrel
+          bintray_uploader: centos7bintray
+      - docker-rpmbuild/build:
+          name: centos8msgpack
+          build_service: centos8msgpack
+          bintray_uploader: centos8bintray
+      - docker-rpmbuild/build:
+          name: centos8msgpackrel
+          build_service: centos8msgpackrel
+          bintray_uploader: centos8bintray
+      - docker-rpmbuild/build:
+          name: centos7msgpackphp73
+          build_file: docker-compose.php73.yml
+          build_service: centos7msgpackphp73
+          bintray_uploader: centos7bintray
+      - docker-rpmbuild/build:
+          name: centos8msgpackphp73
+          build_file: docker-compose.php73.yml
+          build_service: centos8msgpackphp73
+          bintray_uploader: centos8bintray
+      - docker-rpmbuild/build:
+          name: centos7msgpackphp74
+          build_file: docker-compose.php74.yml
+          build_service: centos7msgpackphp74
+          bintray_uploader: centos7bintray
+      - docker-rpmbuild/build:
+          name: centos8msgpackphp74
+          build_file: docker-compose.php74.yml
+          build_service: centos8msgpackphp74
+          bintray_uploader: centos8bintray
+      - docker-rpmbuild/image:
+          name: centos7msgpackphp7build
+          compose_file: build/php71/docker-compose.yml
+          build_service: centos7msgpackphp7build
+          requires:
+            - centos7msgpack
+      - docker-rpmbuild/image:
+          name: centos7msgpackphp7buildrel
+          compose_file: build/php71/docker-compose.yml
+          build_service: centos7msgpackphp7buildrel
+          requires:
+            - centos7msgpackrel
+      - docker-rpmbuild/image:
+          name: centos8msgpackphp7build
+          compose_file: build/php71/docker-compose.yml
+          build_service: centos8msgpackphp7build
+          requires:
+            - centos8msgpack
+      - docker-rpmbuild/image:
+          name: centos8msgpackphp7buildrel
+          compose_file: build/php71/docker-compose.yml
+          build_service: centos8msgpackphp7buildrel
+          requires:
+            - centos8msgpackrel
+      - docker-rpmbuild/image:
+          name: centos7msgpackphp73build
+          compose_file: build/php73/docker-compose.yml
+          build_service: centos7msgpackphp73build
+          requires:
+            - centos7msgpackphp73
+      - docker-rpmbuild/image:
+          name: centos8msgpackphp73build
+          compose_file: build/php73/docker-compose.yml
+          build_service: centos8msgpackphp73build
+          requires:
+            - centos8msgpackphp73
+      - docker-rpmbuild/image:
+          name: centos7msgpackphp74build
+          compose_file: build/php74/docker-compose.yml
+          build_service: centos7msgpackphp74build
+          requires:
+            - centos7msgpackphp74
+      - docker-rpmbuild/image:
+          name: centos8msgpackphp74build
+          compose_file: build/php74/docker-compose.yml
+          build_service: centos8msgpackphp74build
+          requires:
+            - centos8msgpackphp74
