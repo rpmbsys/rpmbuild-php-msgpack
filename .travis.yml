@@ -37,10 +37,6 @@ deploy:
 jobs:
   include:
     - stage: docker
-      before_install:
-        - docker-compose -f rpmbuild/docker-compose.yml pull  centos7repo centos8repo
-      install:
-        - docker-compose -f rpmbuild/docker-compose.yml up -d centos7repo centos8repo
       script:
         - docker-compose -f build/php74/docker-compose.yml build --no-cache --pull
       before_deploy:
@@ -51,10 +47,6 @@ jobs:
         on:
           all_branches: true
     - stage: docker
-      before_install:
-        - docker-compose -f rpmbuild/docker-compose.yml pull  centos7repo centos8repo
-      install:
-        - docker-compose -f rpmbuild/docker-compose.yml up -d  centos7repo centos8repo
       script:
         - docker-compose -f build/php73/docker-compose.yml build --no-cache --pull
       before_deploy:
@@ -65,10 +57,6 @@ jobs:
         on:
           all_branches: true
     - stage: docker
-      before_install:
-        - docker-compose -f rpmbuild/docker-compose.yml pull  centos7repo centos8repo
-      install:
-        - docker-compose -f rpmbuild/docker-compose.yml up -d  centos7repo centos8repo
       script:
         - docker-compose -f build/php80/docker-compose.yml build --no-cache --pull
       before_deploy:
