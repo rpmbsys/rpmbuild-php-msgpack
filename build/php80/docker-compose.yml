@@ -5,12 +5,12 @@ services:
       context: .
       args:
         centos: $OS7
-        image: php-igbinary-7.4
-    image: aursu/peclbuild:${OS7TAG}-php-msgpack-7.4
+        image: php-igbinary-8.0
+    image: aursu/peclbuild:${OS7TAG}-php-msgpack-8.0
   centos8msgpackphp74build:
     build:
       context: .
       args:
         centos: $OS8
-        image: php-igbinary-7.4
-    image: aursu/peclbuild:${OS8TAG}-php-msgpack-7.4
+        image: php-igbinary-8.0
+    image: aursu/peclbuild:${OS8TAG}-php-msgpack-8.0

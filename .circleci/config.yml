@@ -35,15 +35,15 @@ workflows:
           build_service: centos8msgpackphp80
           bintray_uploader: centos8bintray
       - docker-rpmbuild/image:
-          name: centos7msgpackphp7build
+          name: centos7msgpackphp74build
           compose_file: build/php74/docker-compose.yml
-          build_service: centos7msgpackphp7build
+          build_service: centos7msgpackphp74build
           requires:
             - centos7msgpack
       - docker-rpmbuild/image:
-          name: centos8msgpackphp7build
+          name: centos8msgpackphp74build
           compose_file: build/php74/docker-compose.yml
-          build_service: centos8msgpackphp7build
+          build_service: centos8msgpackphp74build
           requires:
             - centos8msgpack
       - docker-rpmbuild/image:
