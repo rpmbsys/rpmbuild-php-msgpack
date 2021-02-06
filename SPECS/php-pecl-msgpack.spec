@@ -10,7 +10,7 @@
 # we don't want -z defs linker flag
 %undefine _strict_symbol_defs_build
 
-%global upstream_version 2.1.0
+%global upstream_version 2.1.2
 %global pecl_name   msgpack
 %global with_zts    0%{?__ztsphp:1}
 %global ini_name  40-%{pecl_name}.ini
@@ -226,6 +226,9 @@ fi
 
 
 %changelog
+* Mon Nov 30 2020 Remi Collet <remi@remirepo.net> - 2.1.2-1
+- update to 2.1.2
+
 * Mon Mar  2 2020 Remi Collet <remi@remirepo.net> - 2.1.0-1
 - update to 2.1.0
 

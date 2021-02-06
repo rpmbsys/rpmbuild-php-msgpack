@@ -11,16 +11,8 @@ workflows:
           build_service: centos7msgpack
           bintray_uploader: centos7bintray
       - docker-rpmbuild/build:
-          name: centos7msgpackrel
-          build_service: centos7msgpackrel
-          bintray_uploader: centos7bintray
-      - docker-rpmbuild/build:
           name: centos8msgpack
           build_service: centos8msgpack
-          bintray_uploader: centos8bintray
-      - docker-rpmbuild/build:
-          name: centos8msgpackrel
-          build_service: centos8msgpackrel
           bintray_uploader: centos8bintray
       - docker-rpmbuild/build:
           name: centos7msgpackphp73
@@ -33,39 +25,27 @@ workflows:
           build_service: centos8msgpackphp73
           bintray_uploader: centos8bintray
       - docker-rpmbuild/build:
-          name: centos7msgpackphp74
-          build_file: docker-compose.php74.yml
-          build_service: centos7msgpackphp74
+          name: centos7msgpackphp80
+          build_file: docker-compose.php80.yml
+          build_service: centos7msgpackphp80
           bintray_uploader: centos7bintray
       - docker-rpmbuild/build:
-          name: centos8msgpackphp74
-          build_file: docker-compose.php74.yml
-          build_service: centos8msgpackphp74
+          name: centos8msgpackphp80
+          build_file: docker-compose.php80.yml
+          build_service: centos8msgpackphp80
           bintray_uploader: centos8bintray
       - docker-rpmbuild/image:
           name: centos7msgpackphp7build
-          compose_file: build/php71/docker-compose.yml
+          compose_file: build/php74/docker-compose.yml
           build_service: centos7msgpackphp7build
           requires:
             - centos7msgpack
       - docker-rpmbuild/image:
-          name: centos7msgpackphp7buildrel
-          compose_file: build/php71/docker-compose.yml
-          build_service: centos7msgpackphp7buildrel
-          requires:
-            - centos7msgpackrel
-      - docker-rpmbuild/image:
           name: centos8msgpackphp7build
-          compose_file: build/php71/docker-compose.yml
+          compose_file: build/php74/docker-compose.yml
           build_service: centos8msgpackphp7build
           requires:
             - centos8msgpack
-      - docker-rpmbuild/image:
-          name: centos8msgpackphp7buildrel
-          compose_file: build/php71/docker-compose.yml
-          build_service: centos8msgpackphp7buildrel
-          requires:
-            - centos8msgpackrel
       - docker-rpmbuild/image:
           name: centos7msgpackphp73build
           compose_file: build/php73/docker-compose.yml
@@ -79,14 +59,14 @@ workflows:
           requires:
             - centos8msgpackphp73
       - docker-rpmbuild/image:
-          name: centos7msgpackphp74build
-          compose_file: build/php74/docker-compose.yml
-          build_service: centos7msgpackphp74build
+          name: centos7msgpackphp80build
+          compose_file: build/php80/docker-compose.yml
+          build_service: centos7msgpackphp80build
           requires:
-            - centos7msgpackphp74
+            - centos7msgpackphp80
       - docker-rpmbuild/image:
-          name: centos8msgpackphp74build
-          compose_file: build/php74/docker-compose.yml
-          build_service: centos8msgpackphp74build
+          name: centos8msgpackphp80build
+          compose_file: build/php80/docker-compose.yml
+          build_service: centos8msgpackphp80build
           requires:
-            - centos8msgpackphp74
+            - centos8msgpackphp80

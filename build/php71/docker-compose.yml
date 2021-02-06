@@ -1,28 +1,28 @@
 version: "3.5"
 services:
-  centos7msgpackphp7build:
+  centos7msgpackphp71build:
     build:
       context: .
       args:
-        centos: $OS7
-    image: aursu/peclbuild:${OS7TAG}-php-msgpack-7.1
-  centos7msgpackphp7buildrel:
-    build:
-      context: .
-      dockerfile: Dockerfile.rel
-      args:
-        centos: $OS7
-    image: aursu/peclbuild:${OS7TAG}-php7-msgpack-7.1
-  centos8msgpackphp7build:
-    build:
-      context: .
-      args:
-        centos: $OS8
-    image: aursu/peclbuild:${OS8TAG}-php-msgpack-7.1
-  centos8msgpackphp7buildrel:
+        centos: 7.8.2003
+    image: aursu/peclbuild:7.8.2003-php-msgpack-7.1
+  centos7msgpackphp71buildrel:
     build:
       context: .
       dockerfile: Dockerfile.rel
       args:
-        centos: $OS8
-    image: aursu/peclbuild:${OS8TAG}-php7-msgpack-7.1
+        centos: 7.8.2003
+    image: aursu/peclbuild:7.8.2003-php7-msgpack-7.1
+  centos8msgpackphp71build:
+    build:
+      context: .
+      args:
+        centos: 8.2.2004
+    image: aursu/peclbuild:8.2.2004-php-msgpack-7.1
+  centos8msgpackphp71buildrel:
+    build:
+      context: .
+      dockerfile: Dockerfile.rel
+      args:
+        centos: 8.2.2004
+    image: aursu/peclbuild:8.2.2004-php7-msgpack-7.1

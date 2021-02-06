@@ -12,14 +12,12 @@ env:
   global:
     - PACKAGE_VCS_URL=https://github.com/aursu/rpmbuild-php-msgpack
   jobs:
-    - BUILD_COMPOSE_FILE=docker-compose.yml       BINTRAY_REPO=php71custom BUILD=centos7msgpack      UPLOADER=centos7bintray
-    - BUILD_COMPOSE_FILE=docker-compose.yml       BINTRAY_REPO=php71custom BUILD=centos7msgpackrel   UPLOADER=centos7bintray
-    - BUILD_COMPOSE_FILE=docker-compose.yml       BINTRAY_REPO=php71custom BUILD=centos8msgpack      UPLOADER=centos8bintray
-    - BUILD_COMPOSE_FILE=docker-compose.yml       BINTRAY_REPO=php71custom BUILD=centos8msgpackrel   UPLOADER=centos8bintray
+    - BUILD_COMPOSE_FILE=docker-compose.yml       BINTRAY_REPO=php74custom BUILD=centos7msgpack      UPLOADER=centos7bintray
+    - BUILD_COMPOSE_FILE=docker-compose.yml       BINTRAY_REPO=php74custom BUILD=centos8msgpack      UPLOADER=centos8bintray
     - BUILD_COMPOSE_FILE=docker-compose.php73.yml BINTRAY_REPO=php73custom BUILD=centos7msgpackphp73 UPLOADER=centos7bintray
     - BUILD_COMPOSE_FILE=docker-compose.php73.yml BINTRAY_REPO=php73custom BUILD=centos8msgpackphp73 UPLOADER=centos8bintray
-    - BUILD_COMPOSE_FILE=docker-compose.php74.yml BINTRAY_REPO=php74custom BUILD=centos7msgpackphp74 UPLOADER=centos7bintray
-    - BUILD_COMPOSE_FILE=docker-compose.php74.yml BINTRAY_REPO=php74custom BUILD=centos8msgpackphp74 UPLOADER=centos8bintray
+    - BUILD_COMPOSE_FILE=docker-compose.php80.yml BINTRAY_REPO=php8custom  BUILD=centos7msgpackphp80 UPLOADER=centos7bintray
+    - BUILD_COMPOSE_FILE=docker-compose.php80.yml BINTRAY_REPO=php8custom  BUILD=centos8msgpackphp80 UPLOADER=centos8bintray
 
 before_script:
   - docker-compose -f ${BUILD_COMPOSE_FILE} build --no-cache ${BUILD}
@@ -40,23 +38,23 @@ jobs:
   include:
     - stage: docker
       before_install:
-        - docker-compose -f rpmbuild/docker-compose.yml pull  centos7repo centos8repo webrepo
+        - docker-compose -f rpmbuild/docker-compose.yml pull  centos7repo centos8repo
       install:
-        - docker-compose -f rpmbuild/docker-compose.yml up -d centos7repo centos8repo webrepo
+        - docker-compose -f rpmbuild/docker-compose.yml up -d centos7repo centos8repo
       script:
-        - docker-compose -f build/php71/docker-compose.yml build --no-cache --pull
+        - docker-compose -f build/php74/docker-compose.yml build --no-cache --pull
       before_deploy:
         - docker login -u $DOCKER_USER -p $DOCKER_PASS
       deploy:
         provider: script
-        script: docker-compose -f build/php71/docker-compose.yml push
+        script: docker-compose -f build/php74/docker-compose.yml push
         on:
           all_branches: true
     - stage: docker
       before_install:
-        - docker-compose -f rpmbuild/docker-compose.yml pull  centos7repo centos8repo webrepo
+        - docker-compose -f rpmbuild/docker-compose.yml pull  centos7repo centos8repo
       install:
-        - docker-compose -f rpmbuild/docker-compose.yml up -d  centos7repo centos8repo webrepo
+        - docker-compose -f rpmbuild/docker-compose.yml up -d  centos7repo centos8repo
       script:
         - docker-compose -f build/php73/docker-compose.yml build --no-cache --pull
       before_deploy:
@@ -68,15 +66,15 @@ jobs:
           all_branches: true
     - stage: docker
       before_install:
-        - docker-compose -f rpmbuild/docker-compose.yml pull  centos7repo centos8repo webrepo
+        - docker-compose -f rpmbuild/docker-compose.yml pull  centos7repo centos8repo
       install:
-        - docker-compose -f rpmbuild/docker-compose.yml up -d  centos7repo centos8repo webrepo
+        - docker-compose -f rpmbuild/docker-compose.yml up -d  centos7repo centos8repo
       script:
-        - docker-compose -f build/php74/docker-compose.yml build --no-cache --pull
+        - docker-compose -f build/php80/docker-compose.yml build --no-cache --pull
       before_deploy:
         - docker login -u $DOCKER_USER -p $DOCKER_PASS
       deploy:
         provider: script
-        script: docker-compose -f build/php74/docker-compose.yml push
+        script: docker-compose -f build/php80/docker-compose.yml push
         on:
           all_branches: true
