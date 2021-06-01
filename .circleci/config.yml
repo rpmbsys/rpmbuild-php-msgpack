@@ -1,7 +1,13 @@
 version: 2.1
 
 orbs:
-  docker-rpmbuild: aursu/rpmbuild@1.1.0
+  docker-rpmbuild: aursu/rpmbuild@1.1.7
+
+parameters:
+  artifactory-url:
+    description: Artifactory URL
+    type: string
+    default: https://rpmb.jfrog.io
 
 workflows:
   msgpackbuild:
