@@ -1,0 +1,68 @@
+name: RPM build
+on: [push]
+env:
+  ARTIFACTORY_URL: https://rpmb.jfrog.io
+  BINTRAY_USER: ${{ secrets.BINTRAY_USER }}
+  BINTRAY_API_KEY: ${{ secrets.BINTRAY_API_KEY }}
+  DOCKER_USER: ${{ secrets.DOCKER_USER }}
+  DOCKER_PASS: ${{ secrets.DOCKER_PASS }}
+  OS7: 7.9.2009
+  OS8: 8.3.2011
+  OS7TAG: 7.9.2009
+  OS8TAG: 8.3.2011
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        include:
+          - compose-file: docker-compose.yml
+            repo: php74custom
+            build: centos7msgpack
+            uploader: centos7bintray
+          - compose-file: docker-compose.yml
+            repo: php74custom
+            build: centos8msgpack
+            uploader: centos8bintray
+          - compose-file: docker-compose.php73.yml
+            repo: php73custom
+            build: centos7msgpackphp73
+            uploader: centos7bintray
+          - compose-file: docker-compose.php73.yml
+            repo: php73custom
+            build: centos8msgpackphp73
+            uploader: centos8bintray
+          - compose-file: docker-compose.php80.yml
+            repo: php8custom
+            build: centos7msgpackphp80
+            uploader: centos7bintray
+          - compose-file: docker-compose.php80.yml
+            repo: php8custom
+            build: centos8msgpackphp80
+            uploader: centos8bintray
+    env:
+      BUILD_COMPOSE_FILE: ${{ matrix.compose-file }}
+      BINTRAY_REPO: ${{ matrix.repo }}
+      BUILD: ${{ matrix.build }}
+      UPLOADER: ${{ matrix.uploader }}
+    steps:
+      - uses: actions/checkout@v2
+        with:
+          submodules: true
+      - run: docker-compose -f $BUILD_COMPOSE_FILE build --no-cache $BUILD
+      - run: docker-compose -f $BUILD_COMPOSE_FILE up --exit-code-from $BUILD $BUILD
+      - run: docker-compose -f rpmbuild/docker-compose.bintray.yml pull $UPLOADER
+      - run: docker-compose -f rpmbuild/docker-compose.bintray.yml run --rm -e BINTRAY_USER=$BINTRAY_USER -e BINTRAY_API_KEY=$BINTRAY_API_KEY -e BINTRAY_REPO=$BINTRAY_REPO -e ARTIFACTORY_URL=$ARTIFACTORY_URL $UPLOADER
+  docker:
+    needs: build
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        compose-file: [build/php74/docker-compose.yml, build/php73/docker-compose.yml, build/php80/docker-compose.yml]
+    steps:
+      - uses: actions/checkout@v2
+        with:
+          submodules: true
+      - run: docker-compose -f ${{ matrix.compose-file }} build --no-cache --pull
+      - run: docker login -u $DOCKER_USER -p $DOCKER_PASS
+      - run: docker-compose -f ${{ matrix.compose-file }} push
