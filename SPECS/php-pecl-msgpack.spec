@@ -10,6 +10,9 @@
 # we don't want -z defs linker flag
 %undefine _strict_symbol_defs_build
 
+%define _debugsource_template %{nil}
+%define debug_package %{nil}
+
 %global upstream_version 2.1.2
 %global pecl_name   msgpack
 %global with_zts    0%{?__ztsphp:1}
