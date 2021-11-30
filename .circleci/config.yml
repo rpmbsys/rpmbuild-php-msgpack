@@ -1,7 +1,7 @@
 version: 2.1
 
 orbs:
-  docker-rpmbuild: aursu/rpmbuild@1.1.7
+  docker-rpmbuild: aursu/rpmbuild@1.1.8
 
 parameters:
   artifactory-url:
@@ -21,14 +21,14 @@ workflows:
           build_service: centos8msgpack
           bintray_uploader: centos8bintray
       - docker-rpmbuild/build:
-          name: centos7msgpackphp73
-          build_file: docker-compose.php73.yml
-          build_service: centos7msgpackphp73
+          name: centos7msgpackphp81
+          build_file: docker-compose.php81.yml
+          build_service: centos7msgpackphp81
           bintray_uploader: centos7bintray
       - docker-rpmbuild/build:
-          name: centos8msgpackphp73
-          build_file: docker-compose.php73.yml
-          build_service: centos8msgpackphp73
+          name: centos8msgpackphp81
+          build_file: docker-compose.php81.yml
+          build_service: centos8msgpackphp81
           bintray_uploader: centos8bintray
       - docker-rpmbuild/build:
           name: centos7msgpackphp80
@@ -53,17 +53,17 @@ workflows:
           requires:
             - centos8msgpack
       - docker-rpmbuild/image:
-          name: centos7msgpackphp73build
-          compose_file: build/php73/docker-compose.yml
-          build_service: centos7msgpackphp73build
+          name: centos7msgpackphp81build
+          compose_file: build/php81/docker-compose.yml
+          build_service: centos7msgpackphp81build
           requires:
-            - centos7msgpackphp73
+            - centos7msgpackphp81
       - docker-rpmbuild/image:
-          name: centos8msgpackphp73build
-          compose_file: build/php73/docker-compose.yml
-          build_service: centos8msgpackphp73build
+          name: centos8msgpackphp81build
+          compose_file: build/php81/docker-compose.yml
+          build_service: centos8msgpackphp81build
           requires:
-            - centos8msgpackphp73
+            - centos8msgpackphp81
       - docker-rpmbuild/image:
           name: centos7msgpackphp80build
           compose_file: build/php80/docker-compose.yml

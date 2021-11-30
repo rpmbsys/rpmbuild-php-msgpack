@@ -1,0 +1,16 @@
+version: "3.5"
+services:
+  centos7msgpackphp81build:
+    build:
+      context: .
+      args:
+        centos: $OS7
+        image: php-igbinary-8.1
+    image: aursu/peclbuild:${OS7TAG}-php-msgpack-8.1
+  centos8msgpackphp81build:
+    build:
+      context: .
+      args:
+        centos: $OS8
+        image: php-igbinary-8.1
+    image: aursu/peclbuild:${OS8TAG}-php-msgpack-8.1

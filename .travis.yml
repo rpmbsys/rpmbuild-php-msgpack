@@ -12,14 +12,14 @@ env:
   global:
     - ARTIFACTORY_URL=https://rpmb.jfrog.io
     - OS7=7.9.2009
-    - OS8=8.3.2011
+    - OS8=8.4.2105
     - OS7TAG=7.9.2009
-    - OS8TAG=8.3.2011
+    - OS8TAG=8.4.2105
   jobs:
     - BUILD_COMPOSE_FILE=docker-compose.yml       BINTRAY_REPO=php74custom BUILD=centos7msgpack      UPLOADER=centos7bintray
     - BUILD_COMPOSE_FILE=docker-compose.yml       BINTRAY_REPO=php74custom BUILD=centos8msgpack      UPLOADER=centos8bintray
-    - BUILD_COMPOSE_FILE=docker-compose.php73.yml BINTRAY_REPO=php73custom BUILD=centos7msgpackphp73 UPLOADER=centos7bintray
-    - BUILD_COMPOSE_FILE=docker-compose.php73.yml BINTRAY_REPO=php73custom BUILD=centos8msgpackphp73 UPLOADER=centos8bintray
+    - BUILD_COMPOSE_FILE=docker-compose.php81.yml BINTRAY_REPO=php81custom BUILD=centos7msgpackphp81 UPLOADER=centos7bintray
+    - BUILD_COMPOSE_FILE=docker-compose.php81.yml BINTRAY_REPO=php81custom BUILD=centos8msgpackphp81 UPLOADER=centos8bintray
     - BUILD_COMPOSE_FILE=docker-compose.php80.yml BINTRAY_REPO=php8custom  BUILD=centos7msgpackphp80 UPLOADER=centos7bintray
     - BUILD_COMPOSE_FILE=docker-compose.php80.yml BINTRAY_REPO=php8custom  BUILD=centos8msgpackphp80 UPLOADER=centos8bintray
 
@@ -52,12 +52,12 @@ jobs:
           all_branches: true
     - stage: docker
       script:
-        - docker-compose -f build/php73/docker-compose.yml build --no-cache --pull
+        - docker-compose -f build/php81/docker-compose.yml build --no-cache --pull
       before_deploy:
         - docker login -u $DOCKER_USER -p $DOCKER_PASS
       deploy:
         provider: script
-        script: docker-compose -f build/php73/docker-compose.yml push
+        script: docker-compose -f build/php81/docker-compose.yml push
         on:
           all_branches: true
     - stage: docker
