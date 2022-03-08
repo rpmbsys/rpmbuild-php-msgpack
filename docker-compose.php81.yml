@@ -1,18 +1,16 @@
-version: "3.5"
+version: "3"
 services:
   centos7msgpackphp81:
     volumes:
-      - rpms:/home/centos/rpmbuild/SRPMS
       - rpm7:/home/centos/rpmbuild/RPMS
     build:
       context: .
       args:
         centos: $OS7
         image: php-8.1
-  centos8msgpackphp81:
+  stream8msgpackphp81:
     volumes:
-      - rpms:/home/centos/rpmbuild/SRPMS
-      - rpm8:/home/centos/rpmbuild/RPMS
+      - rpm8stream:/home/centos/rpmbuild/RPMS
     build:
       context: .
       args:
@@ -20,9 +18,7 @@ services:
         image: php-8.1
 
 volumes:
-  rpms:
-    name: rpms
   rpm7:
     name: rpm7
-  rpm8:
-    name: rpm8
+  rpm8stream:
+    name: rpm8stream

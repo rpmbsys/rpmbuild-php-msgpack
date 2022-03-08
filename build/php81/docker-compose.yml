@@ -7,7 +7,7 @@ services:
         centos: $OS7
         image: php-igbinary-8.1
     image: aursu/peclbuild:${OS7TAG}-php-msgpack-8.1
-  centos8msgpackphp81build:
+  stream8msgpackphp81build:
     build:
       context: .
       args:
