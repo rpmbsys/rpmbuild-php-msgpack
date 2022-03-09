@@ -32,7 +32,7 @@ before_deploy:
 
 deploy:
   provider: script
-  script: docker-compose -f rpmbuild/docker-compose.bintray.yml run --rm -e BINTRAY_USER=$BINTRAY_USER -e BINTRAY_API_KEY=$BINTRAY_API_KEY -e BINTRAY_REPO=$BINTRAY_REPO -e ARTIFACTORY_URL=$ARTIFACTORY_URL ${UPLOADER}
+  script: docker-compose -f rpmbuild/docker-compose.bintray.yml run --rm -e BINTRAY_USER=$BINTRAY_USER -e BINTRAY_API_KEY=$BINTRAY_API_KEY -e BINTRAY_REPO=$BINTRAY_REPO -e ARTIFACTORY_URL=$ARTIFACTORY_URL -e REPO_PATH=$REPO_PATH ${UPLOADER}
   on:
     all_branches: true
 
