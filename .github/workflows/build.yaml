@@ -18,7 +18,7 @@ jobs:
     strategy:
       matrix:
         include:
-         - compose-file: docker-compose.yml
+          - compose-file: docker-compose.yml
             repo: php74custom
             build: centos7build
             uploader: centos7bintray
