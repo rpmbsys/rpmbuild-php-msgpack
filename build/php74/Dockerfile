@@ -1,8 +1,8 @@
-ARG centos=7.9.2009
+ARG os=8.7.20221112
 ARG image=php-igbinary-7.4
 
-FROM aursu/peclbuild:${centos}-${image}
+FROM aursu/peclbuild:${os}-${image}
 
-RUN yum -y --enablerepo=bintray-phpcustom install \
+RUN dnf -y --enablerepo=bintray-phpcustom install \
         php-pecl-msgpack-devel \
-    && yum clean all && rm -rf /var/cache/yum /var/cache/dnf
+    && dnf clean all && rm -rf /var/cache/dnf /var/lib/rpm/__db*

@@ -7,35 +7,47 @@ env:
   DOCKER_USER: ${{ secrets.DOCKER_USER }}
   DOCKER_PASS: ${{ secrets.DOCKER_PASS }}
   OS7: 7.9.2009
-  OS8: stream8
+  RL8: 8.7.20221112
   OS7TAG: 7.9.2009
-  OS8TAG: stream8
+  RL8TAG: 8.7.20221112
+  OS9: stream9-20221206.0
+  OS9TAG: stream9-20221206.0
 jobs:
   build:
     runs-on: ubuntu-latest
     strategy:
       matrix:
         include:
-          - compose-file: docker-compose.yml
+         - compose-file: docker-compose.yml
             repo: php74custom
-            build: centos7msgpack
+            build: centos7build
             uploader: centos7bintray
             repo_path: ""
           - compose-file: docker-compose.yml
             repo: php74custom
-            build: stream8msgpack
-            uploader: stream8bintray
-            repo_path: centos/8-stream
+            build: rocky8build
+            uploader: rocky8bintray
+            repo_path: rocky/8
+          - compose-file: docker-compose.yml
+            repo: php74custom
+            build: stream9build
+            uploader: stream9bintray
+            repo_path: centos/9-stream
           - compose-file: docker-compose.php81.yml
             repo: php81custom
-            build: centos7msgpackphp81
+            build: centos7build
             uploader: centos7bintray
             repo_path: ""
           - compose-file: docker-compose.php81.yml
             repo: php81custom
-            build: stream8msgpackphp81
-            uploader: stream8bintray
-            repo_path: centos/8-stream
+            build: rocky8build
+            uploader: rocky8bintray
+            repo_path: rocky/8
+          - compose-file: docker-compose.php81.yml
+            repo: php81custom
+            build: stream9build
+            uploader: stream9bintray
+            repo_path: centos/9-stream
     env:
       BUILD_COMPOSE_FILE: ${{ matrix.compose-file }}
       BINTRAY_REPO: ${{ matrix.repo }}

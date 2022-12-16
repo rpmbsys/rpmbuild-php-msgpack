@@ -1,22 +1,31 @@
 version: "3"
 services:
-  centos7msgpack:
+  centos7build:
     volumes:
       - rpm7:/home/centos/rpmbuild/RPMS
     build:
       context: .
       args:
-        centos: $OS7
-  stream8msgpack:
+        os: $OS7
+  rocky8build:
     volumes:
-      - rpm8stream:/home/centos/rpmbuild/RPMS
+      - rpm8rocky:/home/centos/rpmbuild/RPMS
     build:
       context: .
       args:
-        centos: $OS8
+        os: $RL8
+  stream9build:
+    volumes:
+      - rpm9stream:/home/centos/rpmbuild/RPMS
+    build:
+      context: .
+      args:
+        os: $OS9
 
 volumes:
   rpm7:
     name: rpm7
-  rpm8stream:
-    name: rpm8stream
+  rpm8rocky:
+    name: rpm8rocky
+  rpm9stream:
+    name: rpm9stream

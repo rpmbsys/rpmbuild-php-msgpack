@@ -1,16 +1,24 @@
-version: "3.5"
+version: "3"
 services:
-  centos7msgpackphp74build:
+  centos7build:
     build:
       context: .
+      dockerfile: Dockerfile.el7
       args:
         centos: $OS7
         image: php-igbinary-7.4
     image: aursu/peclbuild:${OS7TAG}-php-msgpack-7.4
-  stream8msgpackphp74build:
+  rocky8build:
     build:
       context: .
       args:
-        centos: $OS8
+        os: $RL8
         image: php-igbinary-7.4
-    image: aursu/peclbuild:${OS8TAG}-php-msgpack-7.4
+    image: aursu/peclbuild:${RL8TAG}-php-msgpack-7.4
+  stream9build:
+    build:
+      context: .
+      args:
+        os: $OS9
+        image: php-igbinary-7.4
+    image: aursu/peclbuild:${OS9TAG}-php-msgpack-7.4

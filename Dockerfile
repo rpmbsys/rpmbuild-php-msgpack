@@ -1,7 +1,7 @@
-ARG centos=7.9.2009
+ARG os=7.9.2009
 ARG image=php-7.4
 
-FROM aursu/pearbuild:${centos}-${image}
+FROM aursu/pearbuild:${os}-${image}
 
 COPY SOURCES ${BUILD_TOPDIR}/SOURCES
 COPY SPECS ${BUILD_TOPDIR}/SPECS
