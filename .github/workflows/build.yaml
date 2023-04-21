@@ -49,6 +49,21 @@ jobs:
             build: stream9build
             uploader: stream9bintray
             repo_path: centos/9-stream
+          - compose-file: docker-compose.php82.yml
+            repo: php82custom
+            build: centos7build
+            uploader: centos7bintray
+            repo_path: ""
+          - compose-file: docker-compose.php82.yml
+            repo: php82custom
+            build: rocky8build
+            uploader: rocky8bintray
+            repo_path: rocky/8
+          - compose-file: docker-compose.php82.yml
+            repo: php82custom
+            build: stream9build
+            uploader: stream9bintray
+            repo_path: centos/9-stream
     env:
       BUILD_COMPOSE_FILE: ${{ matrix.compose-file }}
       BINTRAY_REPO: ${{ matrix.repo }}
@@ -69,7 +84,7 @@ jobs:
     if: ${{ always() }}
     strategy:
       matrix:
-        compose-file: [build/php74/docker-compose.yml, build/php81/docker-compose.yml]
+        compose-file: [build/php74/docker-compose.yml, build/php81/docker-compose.yml, build/php82/docker-compose.yml]
     steps:
       - uses: actions/checkout@v2
         with:
