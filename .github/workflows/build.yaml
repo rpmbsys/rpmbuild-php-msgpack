@@ -7,11 +7,11 @@ env:
   DOCKER_USER: ${{ secrets.DOCKER_USER }}
   DOCKER_PASS: ${{ secrets.DOCKER_PASS }}
   OS7: 7.9.2009
-  RL8: 8.7.20221112
+  RL8: 8.8.20230518
   OS7TAG: 7.9.2009
-  RL8TAG: 8.7.20221112
-  OS9: stream9-20221206.0
-  OS9TAG: stream9-20221206.0
+  RL8TAG: 8.8.20230518
+  OS9: stream9-20231016.0
+  OS9TAG: stream9-20231016.0
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -20,17 +20,17 @@ jobs:
       matrix:
         include:
           - compose-file: docker-compose.yml
-            repo: php74custom
+            repo: php83custom
             build: centos7build
             uploader: centos7bintray
             repo_path: ""
           - compose-file: docker-compose.yml
-            repo: php74custom
+            repo: php83custom
             build: rocky8build
             uploader: rocky8bintray
             repo_path: rocky/8
           - compose-file: docker-compose.yml
-            repo: php74custom
+            repo: php83custom
             build: stream9build
             uploader: stream9bintray
             repo_path: centos/9-stream
@@ -84,7 +84,7 @@ jobs:
     if: ${{ always() }}
     strategy:
       matrix:
-        compose-file: [build/php74/docker-compose.yml, build/php81/docker-compose.yml, build/php82/docker-compose.yml]
+        compose-file: [build/php83/docker-compose.yml, build/php81/docker-compose.yml, build/php82/docker-compose.yml]
     steps:
       - uses: actions/checkout@v2
         with:

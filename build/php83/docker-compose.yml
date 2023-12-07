@@ -6,19 +6,19 @@ services:
       dockerfile: Dockerfile.el7
       args:
         centos: $OS7
-        image: php-igbinary-7.4
-    image: aursu/peclbuild:${OS7TAG}-php-msgpack-7.4
+        image: php-igbinary-8.3
+    image: aursu/peclbuild:${OS7TAG}-php-msgpack-8.3
   rocky8build:
     build:
       context: .
       args:
         os: $RL8
-        image: php-igbinary-7.4
-    image: aursu/peclbuild:${RL8TAG}-php-msgpack-7.4
+        image: php-igbinary-8.3
+    image: aursu/peclbuild:${RL8TAG}-php-msgpack-8.3
   stream9build:
     build:
       context: .
       args:
         os: $OS9
-        image: php-igbinary-7.4
-    image: aursu/peclbuild:${OS9TAG}-php-msgpack-7.4
+        image: php-igbinary-8.3
+    image: aursu/peclbuild:${OS9TAG}-php-msgpack-8.3
