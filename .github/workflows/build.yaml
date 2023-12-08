@@ -71,7 +71,7 @@ jobs:
       UPLOADER: ${{ matrix.uploader }}
       REPO_PATH: ${{ matrix.repo_path }}
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
         with:
           submodules: true
       - run: docker-compose -f $BUILD_COMPOSE_FILE build --no-cache $BUILD
@@ -86,7 +86,7 @@ jobs:
       matrix:
         compose-file: [build/php83/docker-compose.yml, build/php81/docker-compose.yml, build/php82/docker-compose.yml]
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
         with:
           submodules: true
       - run: docker-compose -f ${{ matrix.compose-file }} build --no-cache --pull
