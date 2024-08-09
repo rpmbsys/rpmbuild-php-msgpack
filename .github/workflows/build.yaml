@@ -21,44 +21,29 @@ jobs:
         include:
           - compose-file: docker-compose.yml
             repo: php83custom
-            build: centos7build
-            uploader: centos7bintray
-            repo_path: ""
-          - compose-file: docker-compose.yml
-            repo: php83custom
             build: rocky8build
             uploader: rocky8bintray
             repo_path: rocky/8
           - compose-file: docker-compose.yml
             repo: php83custom
-            build: stream9build
-            uploader: stream9bintray
-            repo_path: centos/9-stream
-          - compose-file: docker-compose.php81.yml
-            repo: php81custom
-            build: centos7build
-            uploader: centos7bintray
-            repo_path: ""
-          - compose-file: docker-compose.php81.yml
-            repo: php81custom
-            build: rocky8build
-            uploader: rocky8bintray
-            repo_path: rocky/8
-          - compose-file: docker-compose.php81.yml
-            repo: php81custom
+            build: rocky9build
+            uploader: rocky9bintray
+            repo_path: rocky/9
+          - compose-file: docker-compose.yml
+            repo: php83custom
             build: stream9build
             uploader: stream9bintray
             repo_path: centos/9-stream
           - compose-file: docker-compose.php82.yml
             repo: php82custom
-            build: centos7build
-            uploader: centos7bintray
-            repo_path: ""
-          - compose-file: docker-compose.php82.yml
-            repo: php82custom
             build: rocky8build
             uploader: rocky8bintray
             repo_path: rocky/8
+          - compose-file: docker-compose.php82.yml
+            repo: php82custom
+            build: rocky9build
+            uploader: rocky9bintray
+            repo_path: rocky/9
           - compose-file: docker-compose.php82.yml
             repo: php82custom
             build: stream9build
@@ -74,21 +59,21 @@ jobs:
       - uses: actions/checkout@v3
         with:
           submodules: true
-      - run: docker-compose -f $BUILD_COMPOSE_FILE build --no-cache $BUILD
-      - run: docker-compose -f $BUILD_COMPOSE_FILE up --exit-code-from $BUILD $BUILD
-      - run: docker-compose -f rpmbuild/docker-compose.bintray.yml pull $UPLOADER
-      - run: docker-compose -f rpmbuild/docker-compose.bintray.yml run --rm -e BINTRAY_USER=$BINTRAY_USER -e BINTRAY_API_KEY=$BINTRAY_API_KEY -e BINTRAY_REPO=$BINTRAY_REPO -e ARTIFACTORY_URL=$ARTIFACTORY_URL -e REPO_PATH=$REPO_PATH $UPLOADER
+      - run: docker compose -f $BUILD_COMPOSE_FILE build --no-cache $BUILD
+      - run: docker compose -f $BUILD_COMPOSE_FILE up --exit-code-from $BUILD $BUILD
+      - run: docker compose -f rpmbuild/docker-compose.bintray.yml pull $UPLOADER
+      - run: docker compose -f rpmbuild/docker-compose.bintray.yml run --rm -e BINTRAY_USER=$BINTRAY_USER -e BINTRAY_API_KEY=$BINTRAY_API_KEY -e BINTRAY_REPO=$BINTRAY_REPO -e ARTIFACTORY_URL=$ARTIFACTORY_URL -e REPO_PATH=$REPO_PATH $UPLOADER
   docker:
     needs: build
     runs-on: ubuntu-latest
     if: ${{ always() }}
     strategy:
       matrix:
-        compose-file: [build/php83/docker-compose.yml, build/php81/docker-compose.yml, build/php82/docker-compose.yml]
+        compose-file: [build/php82/docker-compose.yml, build/php83/docker-compose.yml]
     steps:
       - uses: actions/checkout@v3
         with:
           submodules: true
-      - run: docker-compose -f ${{ matrix.compose-file }} build --no-cache --pull
+      - run: docker compose -f ${{ matrix.compose-file }} build --no-cache --pull
       - run: docker login -u $DOCKER_USER -p $DOCKER_PASS
-      - run: docker-compose -f ${{ matrix.compose-file }} push
+      - run: docker compose -f ${{ matrix.compose-file }} push
