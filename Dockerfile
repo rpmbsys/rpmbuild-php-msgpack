@@ -1,5 +1,5 @@
 ARG os=10.0.20250606
-ARG image=php-igbinary-8.4
+ARG image=php-apcu-8.4
 
 FROM aursu/peclbuild:${os}-${image}
 
