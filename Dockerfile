@@ -1,7 +1,7 @@
 ARG os=10.0.20250606
-ARG image=php-8.4
+ARG image=php-igbinary-8.4
 
-FROM aursu/pearbuild:${os}-${image}
+FROM aursu/peclbuild:${os}-${image}
 
 COPY SOURCES ${BUILD_TOPDIR}/SOURCES
 COPY SPECS ${BUILD_TOPDIR}/SPECS
