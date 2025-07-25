@@ -72,7 +72,7 @@ jobs:
       - run: docker compose -f rpmbuild/docker-compose.yml pull $UPLOADER
       - run: docker compose -f rpmbuild/docker-compose.yml run --rm -e BINTRAY_USER=$BINTRAY_USER -e BINTRAY_API_KEY=$BINTRAY_API_KEY -e BINTRAY_REPO=$BINTRAY_REPO -e ARTIFACTORY_URL=$ARTIFACTORY_URL -e REPO_PATH=$REPO_PATH $UPLOADER
   docker:
-    needs: test
+    needs: build
     runs-on: ubuntu-latest
     strategy:
       matrix:

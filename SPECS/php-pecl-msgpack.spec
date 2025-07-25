@@ -1,30 +1,27 @@
 # Fedora spec file for php-pecl-msgpack
 #
-# Copyright (c) 2012-2023 Remi Collet
+# Copyright (c) 2012-2024 Remi Collet
 # License: CC-BY-SA-4.0
 # http://creativecommons.org/licenses/by-sa/4.0/
 #
 # Please, preserve the changelog entries
 #
 
-# we don't want -z defs linker flag
-%undefine _strict_symbol_defs_build
+# system library is outdated, and bundled library includes not yet released changes
+# BTW, only pack_template.h and unpack_template.h headers are used
+%bcond_with              msgpack
 
-%define _debugsource_template %{nil}
-%define debug_package %{nil}
+# to disable test suite
+%bcond_without           tests
 
-%global upstream_version 2.2.0
+%global upstream_version 3.0.0
 #global upstream_prever  RC2
 #global upstream_lower   RC2
 %global sources          %{pecl_name}-%{upstream_version}%{?upstream_prever}
 %global _configure       ../%{sources}/configure
 
-%global pecl_name   msgpack
-%global with_zts    0%{?__ztsphp:1}
-%global ini_name  40-%{pecl_name}.ini
-# system library is outdated, and bundled library includes not yet released changes
-# BTW, only pack_template.h and unpack_template.h headers are used
-%global        with_msgpack 0
+%global pecl_name        msgpack
+%global ini_name         40-%{pecl_name}.ini
 
 Summary:       API for communicating with MessagePack serialization
 Name:          php-pecl-msgpack
@@ -32,21 +29,18 @@ Version:       %{upstream_version}%{?upstream_lower:~%{upstream_lower}}
 Release:       3%{?dist}
 Source:        https://pecl.php.net/get/%{pecl_name}-%{upstream_version}%{?upstream_prever}.tgz
 License:       BSD-3-Clause
-Group:         Development/Languages
 URL:           https://pecl.php.net/package/msgpack
+
+ExcludeArch:   %{ix86}
 
 BuildRequires: php-devel >= 7.0
 BuildRequires: php-pear
-%if %{with_msgpack}
+BuildRequires: php-pecl-apcu-devel
+%if %{with msgpack}
 BuildRequires: msgpack-devel
 %else
 Provides:      bundled(msgpack) = 3.2.0
 %endif
-# https://github.com/msgpack/msgpack-php/issues/25
-ExcludeArch: ppc64
-
-Requires(post): %{__pecl}
-Requires(postun): %{__pecl}
 
 Requires:      php(zend-abi) = %{php_zend_api}
 Requires:      php(api) = %{php_core_api}
@@ -56,11 +50,6 @@ Provides:      php-%{pecl_name}%{?_isa} = %{version}
 Provides:      php-pecl(%{pecl_name}) = %{version}
 Provides:      php-pecl(%{pecl_name})%{?_isa} = %{version}
 
-%if 0%{?fedora} < 20 && 0%{?rhel} < 7
-# Filter shared private
-%{?filter_provides_in: %filter_provides_in %{_libdir}/.*\.so$}
-%{?filter_setup}
-%endif
 
 %description
 This extension provide API for communicating with MessagePack serialization.
@@ -75,12 +64,9 @@ If you ever wished to use JSON for convenience (storing an image with metadata)
 but could not for technical reasons (encoding, size, speed...), MessagePack is
 a perfect replacement.
 
-This extension is still EXPERIMENTAL.
-
 
 %package devel
 Summary:       MessagePack developer files (header)
-Group:         Development/Libraries
 Requires:      php-pecl-%{pecl_name}%{?_isa} = %{version}-%{release}
 Requires:      php-devel%{?_isa}
 
@@ -94,14 +80,10 @@ These are the files needed to compile programs using MessagePack serializer.
 sed -e '/LICENSE/s/role="doc"/role="src"/' -i package.xml
 
 cd %{sources}
-
-%if %{with_msgpack}
+%if %{with msgpack}
 # use system library
 rm -rf msgpack
 %endif
-
-# When this file will be removed, clean the description.
-[ -f EXPERIMENTAL ] || exit 1
 
 # Sanity check, really often broken
 extver=$(sed -n '/#define PHP_MSGPACK_VERSION/{s/.* "//;s/".*$//;p}' php_msgpack.h)
@@ -111,11 +93,6 @@ if test "x${extver}" != "x%{upstream_version}%{?upstream_prever}%{?gh_date:-dev}
 fi
 cd ..
 
-mkdir NTS
-%if %{with_zts}
-mkdir ZTS
-%endif
-
 # Drop in the bit of configuration
 cat > %{ini_name} << 'EOF'
 ; Enable MessagePack extension module
@@ -124,42 +101,35 @@ extension = %{pecl_name}.so
 ; Configuration options
 
 ;msgpack.error_display = On
-;msgpack.illegal_key_insert = Off
 ;msgpack.php_only = On
+;msgpack.assoc = On
+;msgpack.illegal_key_insert = Off
+;msgpack.use_str8_serialization = On
 EOF
 
 
 %build
 cd %{sources}
 %{__phpize}
+sed -e 's/INSTALL_ROOT/DESTDIR/' -i build/Makefile.global
 
-cd ../NTS
 %configure --with-php-config=%{__phpconfig}
-make %{?_smp_mflags}
+%make_build
 
-%if %{with_zts}
-cd ../ZTS
-%configure --with-php-config=%{__ztsphpconfig}
-make %{?_smp_mflags}
-%endif
 
 
 %install
-# Install the NTS stuff
-make -C NTS install INSTALL_ROOT=%{buildroot}
+: Install the configuration file
 install -D -m 644 %{ini_name} %{buildroot}%{php_inidir}/%{ini_name}
 
-%if %{with_zts}
-# Install the ZTS stuff
-make -C ZTS install INSTALL_ROOT=%{buildroot}
-install -D -m 644 %{ini_name} %{buildroot}%{php_ztsinidir}/%{ini_name}
-%endif
-
-# Install the package XML file
+: Install the package XML file
 install -D -m 644 package.xml %{buildroot}%{pecl_xmldir}/%{name}.xml
 
-# Test & Documentation
 cd %{sources}
+: Install the extension
+%make_install
+
+: Install Test and Documentation
 for i in $(grep 'role="test"' ../package.xml | sed -e 's/^.*name="//;s/".*$//')
 do [ -f tests/$i ] && install -Dpm 644 tests/$i %{buildroot}%{pecl_testdir}/%{pecl_name}/tests/$i
    [ -f $i ]       && install -Dpm 644 $i       %{buildroot}%{pecl_testdir}/%{pecl_name}/$i
@@ -170,41 +140,23 @@ done
 
 
 %check
-# Erratic results
-rm */tests/034.phpt
-# too slow
-rm */tests/035.phpt
-
 cd %{sources}
-: Minimal load test for NTS extension
+# Erratic results
+rm tests/034.phpt
+# too slow
+rm tests/035.phpt
+
+: Minimal load test for the extension
 %{__php} --no-php-ini \
     --define extension=%{buildroot}%{php_extdir}/%{pecl_name}.so \
-    --modules | grep %{pecl_name}
+    --modules | grep '^%{pecl_name}$'
 
-: Upstream test suite  for NTS extension
-TEST_PHP_EXECUTABLE=%{_bindir}/php \
-TEST_PHP_ARGS="-n -d extension_dir=$PWD/../NTS/modules -d extension=%{pecl_name}.so" \
+%if %{with tests}
+: Upstream test suite
+TEST_PHP_ARGS="-n -d extension=apcu.so -d extension=$PWD/modules/%{pecl_name}.so" \
 %{__php} -n run-tests.php -q --show-diff %{?_smp_mflags}
-
-%if %{with_zts}
-: Minimal load test for ZTS extension
-%{__ztsphp} --no-php-ini \
-    --define extension=%{buildroot}%{php_ztsextdir}/%{pecl_name}.so \
-    --modules | grep %{pecl_name}
-
-: Upstream test suite  for ZTS extension
-TEST_PHP_EXECUTABLE=%{__ztsphp} \
-TEST_PHP_ARGS="-n -d extension_dir=$PWD/../ZTS/modules -d extension=%{pecl_name}.so" \
-%{__ztsphp} -n run-tests.php -q --show-diff %{?_smp_mflags}
 %endif
 
-%post
-%{pecl_install} %{pecl_xmldir}/%{name}.xml >/dev/null || :
-
-%postun
-if [ $1 -eq 0 ] ; then
-    %{pecl_uninstall} %{pecl_name} >/dev/null || :
-fi
 
 %files
 %license %{sources}/LICENSE
@@ -214,22 +166,37 @@ fi
 %config(noreplace) %{php_inidir}/%{ini_name}
 %{php_extdir}/%{pecl_name}.so
 
-%if %{with_zts}
-%config(noreplace) %{php_ztsinidir}/%{ini_name}
-%{php_ztsextdir}/%{pecl_name}.so
-%endif
-
 
 %files devel
 %doc %{pecl_testdir}/%{pecl_name}
 %{php_incldir}/ext/%{pecl_name}
 
-%if %{with_zts}
-%{php_ztsincldir}/ext/%{pecl_name}
-%endif
-
 
 %changelog
+* Sat Jan 18 2025 Fedora Release Engineering <releng@fedoraproject.org> - 3.0.0-3
+- Rebuilt for https://fedoraproject.org/wiki/Fedora_42_Mass_Rebuild
+
+* Mon Oct 14 2024 Remi Collet <remi@fedoraproject.org> - 3.0.0-2
+- rebuild for https://fedoraproject.org/wiki/Changes/php84
+
+* Thu Sep 26 2024 Remi Collet <remi@remirepo.net> - 3.0.0-1
+- update to 3.0.0
+- modernize spec file
+- add APCu support
+
+* Fri Jul 19 2024 Fedora Release Engineering <releng@fedoraproject.org> - 2.2.0-7
+- Rebuilt for https://fedoraproject.org/wiki/Fedora_41_Mass_Rebuild
+
+* Tue Apr 16 2024 Remi Collet <remi@remirepo.net> - 2.2.0-6
+- drop 32-bit support
+  https://fedoraproject.org/wiki/Changes/php_no_32_bit
+
+* Thu Jan 25 2024 Fedora Release Engineering <releng@fedoraproject.org> - 2.2.0-5
+- Rebuilt for https://fedoraproject.org/wiki/Fedora_40_Mass_Rebuild
+
+* Sun Jan 21 2024 Fedora Release Engineering <releng@fedoraproject.org> - 2.2.0-4
+- Rebuilt for https://fedoraproject.org/wiki/Fedora_40_Mass_Rebuild
+
 * Tue Oct 03 2023 Remi Collet <remi@remirepo.net> - 2.2.0-3
 - rebuild for https://fedoraproject.org/wiki/Changes/php83
 
@@ -241,17 +208,75 @@ fi
 - build out of sources tree
 - use parallel execution for test suite
 
+* Thu Apr 20 2023 Remi Collet <remi@remirepo.net> - 2.2.0~RC2-2
+- use SPDX license ID
+
+* Fri Oct  7 2022 Remi Collet <remi@remirepo.net> - 2.2.0~RC2-1
+- update to 2.2.0RC2
+
+* Wed Oct 05 2022 Remi Collet <remi@remirepo.net> - 2.2.0~RC1-4
+- rebuild for https://fedoraproject.org/wiki/Changes/php82
+
+* Fri Jul 22 2022 Fedora Release Engineering <releng@fedoraproject.org> - 2.2.0~RC1-3
+- Rebuilt for https://fedoraproject.org/wiki/Fedora_37_Mass_Rebuild
+
+* Fri Jan 21 2022 Fedora Release Engineering <releng@fedoraproject.org> - 2.2.0~RC1-2
+- Rebuilt for https://fedoraproject.org/wiki/Fedora_36_Mass_Rebuild
+
+* Thu Oct 28 2021 Remi Collet <remi@remirepo.net> - 2.2.0~RC1-1
+- update to 2.2.0RC1
+- rebuild for https://fedoraproject.org/wiki/Changes/php81
+
+* Fri Jul 23 2021 Fedora Release Engineering <releng@fedoraproject.org> - 2.1.2-4
+- Rebuilt for https://fedoraproject.org/wiki/Fedora_35_Mass_Rebuild
+
+* Thu Mar  4 2021 Remi Collet <remi@remirepo.net> - 2.1.2-2
+- rebuild for https://fedoraproject.org/wiki/Changes/php80
+
+* Wed Jan 27 2021 Fedora Release Engineering <releng@fedoraproject.org> - 2.1.2-2
+- Rebuilt for https://fedoraproject.org/wiki/Fedora_34_Mass_Rebuild
+
 * Mon Nov 30 2020 Remi Collet <remi@remirepo.net> - 2.1.2-1
 - update to 2.1.2
+
+* Mon Aug 10 2020 Remi Collet <remi@remirepo.net> - 2.1.1-1
+- update to 2.1.1
+
+* Tue Jul 28 2020 Fedora Release Engineering <releng@fedoraproject.org> - 2.1.0-2
+- Rebuilt for https://fedoraproject.org/wiki/Fedora_33_Mass_Rebuild
 
 * Mon Mar  2 2020 Remi Collet <remi@remirepo.net> - 2.1.0-1
 - update to 2.1.0
 
+* Thu Jan 30 2020 Fedora Release Engineering <releng@fedoraproject.org> - 2.1.0~beta1-2
+- Rebuilt for https://fedoraproject.org/wiki/Fedora_32_Mass_Rebuild
+
+* Fri Dec 20 2019 Remi Collet <remi@remirepo.net> - 2.1.0~beta1-1
+- update to 2.1.0beta1
+
+* Thu Oct 03 2019 Remi Collet <remi@remirepo.net> - 2.0.3-4
+- rebuild for https://fedoraproject.org/wiki/Changes/php74
+
+* Fri Jul 26 2019 Fedora Release Engineering <releng@fedoraproject.org> - 2.0.3-3
+- Rebuilt for https://fedoraproject.org/wiki/Fedora_31_Mass_Rebuild
+
+* Sat Feb 02 2019 Fedora Release Engineering <releng@fedoraproject.org> - 2.0.3-2
+- Rebuilt for https://fedoraproject.org/wiki/Fedora_30_Mass_Rebuild
+
 * Thu Dec 20 2018 Remi Collet <remi@remirepo.net> - 2.0.3-1
 - update to 2.0.3
 
-* Fri Jul 20 2018 Alexander Ursu <alexander.ursu@gmail.com> - 2.0.2-7
-- Build for CentOS
+* Thu Oct 11 2018 Remi Collet <remi@remirepo.net> - 2.0.3-0.1.20171026.943d272
+- update to 2.0.3-dev for PHP 7.3 with patches from
+  https://github.com/msgpack/msgpack-php/pull/124
+  https://github.com/msgpack/msgpack-php/pull/127
+- ignore test suite result for now
+
+* Fri Jul 13 2018 Fedora Release Engineering <releng@fedoraproject.org> - 2.0.2-8
+- Rebuilt for https://fedoraproject.org/wiki/Fedora_29_Mass_Rebuild
+
+* Fri Feb 09 2018 Fedora Release Engineering <releng@fedoraproject.org> - 2.0.2-7
+- Rebuilt for https://fedoraproject.org/wiki/Fedora_28_Mass_Rebuild
 
 * Mon Jan 29 2018 Remi Collet <remi@remirepo.net> - 2.0.2-6
 - undefine _strict_symbol_defs_build
@@ -330,3 +355,4 @@ fi
 
 * Sat Sep 15 2012 Remi Collet <remi@fedoraproject.org> - 0.5.2-1
 - initial package, version 0.5.2 (beta)
+
