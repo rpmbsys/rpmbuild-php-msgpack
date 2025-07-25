@@ -4,12 +4,12 @@ services:
       context: .
       args:
         os: $RL10
-        image: php-igbinary-8.2
-    image: aursu/peclbuild:${RL10TAG}-php-msgpack-8.2
+        image: php-igbinary-8.4
+    image: aursu/peclbuild:${RL10TAG}-php-msgpack-8.4
   rocky9build:
     build:
       context: .
       args:
         os: $RL9
-        image: php-igbinary-8.2
-    image: aursu/peclbuild:${RL9TAG}-php-msgpack-8.2
+        image: php-igbinary-8.4
+    image: aursu/peclbuild:${RL9TAG}-php-msgpack-8.4
