@@ -6,12 +6,10 @@ env:
   BINTRAY_API_KEY: ${{ secrets.BINTRAY_API_KEY }}
   DOCKER_USER: ${{ secrets.DOCKER_USER }}
   DOCKER_PASS: ${{ secrets.DOCKER_PASS }}
-  RL8: 8.10.20240528
-  RL8TAG: 8.10.20240528
-  RL9: 9.4.20240523
-  RL9TAG: 9.4.20240523
-  OS9: stream9-20240527.0
-  OS9TAG: stream9-20240527.0
+  RL9: 9.6.20250531
+  RL9TAG: 9.6.20250531
+  RL10: 10.0.20250606
+  RL10TAG: 10.0.20250606
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -19,36 +17,46 @@ jobs:
     strategy:
       matrix:
         include:
-          - compose-file: docker-compose.yml
-            repo: php83custom
-            build: rocky8build
-            uploader: rocky8bintray
-            repo_path: rocky/8
-          - compose-file: docker-compose.yml
-            repo: php83custom
+          - compose-file: docker-compose.php84.yml
+            repo: php84custom
+            build: rocky10build
+            uploader: rocky10bintray
+            repo_path: rocky/10
+          - compose-file: docker-compose.php84.yml
+            repo: php84custom
             build: rocky9build
             uploader: rocky9bintray
             repo_path: rocky/9
-          - compose-file: docker-compose.yml
+          - compose-file: docker-compose.php83.yml
             repo: php83custom
-            build: stream9build
-            uploader: stream9bintray
-            repo_path: centos/9-stream
-          - compose-file: docker-compose.php82.yml
-            repo: php82custom
-            build: rocky8build
-            uploader: rocky8bintray
-            repo_path: rocky/8
-          - compose-file: docker-compose.php82.yml
-            repo: php82custom
+            build: rocky10build
+            uploader: rocky10bintray
+            repo_path: rocky/10
+          - compose-file: docker-compose.php83.yml
+            repo: php83custom
             build: rocky9build
             uploader: rocky9bintray
             repo_path: rocky/9
           - compose-file: docker-compose.php82.yml
             repo: php82custom
-            build: stream9build
-            uploader: stream9bintray
-            repo_path: centos/9-stream
+            build: rocky10build
+            uploader: rocky10bintray
+            repo_path: rocky/10
+          - compose-file: docker-compose.php82.yml
+            repo: php82custom
+            build: rocky9build
+            uploader: rocky9bintray
+            repo_path: rocky/9
+          - compose-file: docker-compose.php81.yml
+            repo: php81custom
+            build: rocky10build
+            uploader: rocky10bintray
+            repo_path: rocky/10
+          - compose-file: docker-compose.php81.yml
+            repo: php81custom
+            build: rocky9build
+            uploader: rocky9bintray
+            repo_path: rocky/9
     env:
       BUILD_COMPOSE_FILE: ${{ matrix.compose-file }}
       BINTRAY_REPO: ${{ matrix.repo }}
@@ -61,15 +69,14 @@ jobs:
           submodules: true
       - run: docker compose -f $BUILD_COMPOSE_FILE build --no-cache $BUILD
       - run: docker compose -f $BUILD_COMPOSE_FILE up --exit-code-from $BUILD $BUILD
-      - run: docker compose -f rpmbuild/docker-compose.bintray.yml pull $UPLOADER
-      - run: docker compose -f rpmbuild/docker-compose.bintray.yml run --rm -e BINTRAY_USER=$BINTRAY_USER -e BINTRAY_API_KEY=$BINTRAY_API_KEY -e BINTRAY_REPO=$BINTRAY_REPO -e ARTIFACTORY_URL=$ARTIFACTORY_URL -e REPO_PATH=$REPO_PATH $UPLOADER
+      - run: docker compose -f rpmbuild/docker-compose.yml pull $UPLOADER
+      - run: docker compose -f rpmbuild/docker-compose.yml run --rm -e BINTRAY_USER=$BINTRAY_USER -e BINTRAY_API_KEY=$BINTRAY_API_KEY -e BINTRAY_REPO=$BINTRAY_REPO -e ARTIFACTORY_URL=$ARTIFACTORY_URL -e REPO_PATH=$REPO_PATH $UPLOADER
   docker:
-    needs: build
+    needs: test
     runs-on: ubuntu-latest
-    if: ${{ always() }}
     strategy:
       matrix:
-        compose-file: [build/php82/docker-compose.yml, build/php83/docker-compose.yml]
+        compose-file: [build/php84/docker-compose.yml, build/php83/docker-compose.yml, build/php82/docker-compose.yml, build/php81/docker-compose.yml]
     steps:
       - uses: actions/checkout@v3
         with:

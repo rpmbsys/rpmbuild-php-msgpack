@@ -1,0 +1,15 @@
+services:
+  rocky10build:
+    build:
+      context: .
+      args:
+        os: $RL10
+        image: php-igbinary-8.1
+    image: aursu/peclbuild:${RL10TAG}-php-msgpack-8.1
+  rocky9build:
+    build:
+      context: .
+      args:
+        os: $RL9
+        image: php-igbinary-8.1
+    image: aursu/peclbuild:${RL9TAG}-php-msgpack-8.1
