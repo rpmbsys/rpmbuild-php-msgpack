@@ -47,13 +47,13 @@ jobs:
             build: rocky9build
             uploader: rocky9bintray
             repo_path: rocky/9
-          - compose-file: docker-compose.php81.yml
-            repo: php81custom
+          - compose-file: docker-compose.php85.yml
+            repo: php85custom
             build: rocky10build
             uploader: rocky10bintray
             repo_path: rocky/10
-          - compose-file: docker-compose.php81.yml
-            repo: php81custom
+          - compose-file: docker-compose.php85.yml
+            repo: php85custom
             build: rocky9build
             uploader: rocky9bintray
             repo_path: rocky/9
@@ -76,7 +76,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        compose-file: [build/php84/docker-compose.yml, build/php83/docker-compose.yml, build/php82/docker-compose.yml, build/php81/docker-compose.yml]
+        compose-file: [build/php84/docker-compose.yml, build/php83/docker-compose.yml, build/php82/docker-compose.yml, build/php85/docker-compose.yml]
     steps:
       - uses: actions/checkout@v3
         with:
