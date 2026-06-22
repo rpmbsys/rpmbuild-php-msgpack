@@ -75,7 +75,7 @@ a perfect replacement.
 
 %package devel
 Summary:       MessagePack developer files (header)
-Requires:      php-pecl-%{pecl_name}%{?_isa} = %{version}-%{release}
+Requires:      php-pecl-%{pecl_name}%{?_isa} = %{?epoch:%{epoch}:}%{version}-%{release}
 Requires:      php-devel%{?_isa}
 
 %description devel
